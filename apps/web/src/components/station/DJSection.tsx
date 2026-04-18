@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { DJ } from "@ownradio/shared";
 import { DJBioModal } from "./DJBioModal";
 
@@ -22,9 +23,11 @@ export function DJSection({ dj, listenerCount }: DJSectionProps) {
           className="flex items-center gap-3 min-w-0"
         >
           {dj.avatarUrl ? (
-            <img
+            <Image
               src={dj.avatarUrl}
               alt={dj.name}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-full object-cover border border-brand-pink/40 flex-shrink-0"
             />
           ) : (

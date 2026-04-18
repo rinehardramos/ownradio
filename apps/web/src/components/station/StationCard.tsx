@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { StationWithDJ } from "@ownradio/shared";
 import { useStation } from "@/hooks/useStation";
 import { useAuth } from "@/hooks/useAuth";
@@ -66,9 +67,11 @@ export function StationCard({ station, isActive }: StationCardProps) {
         {currentSong ? (
           <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 backdrop-blur-sm">
             {currentSong.albumCoverUrl ? (
-              <img
+              <Image
                 src={currentSong.albumCoverUrl}
                 alt={currentSong.title}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
               />
             ) : (

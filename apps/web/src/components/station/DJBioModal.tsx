@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { DJ } from "@ownradio/shared";
 
 interface DJBioModalProps {
@@ -36,9 +37,11 @@ export function DJBioModal({ dj, isOpen, onClose }: DJBioModalProps) {
         {/* DJ avatar */}
         <div className="flex flex-col items-center gap-3 mb-4">
           {dj.avatarUrl ? (
-            <img
+            <Image
               src={dj.avatarUrl}
               alt={dj.name}
+              width={80}
+              height={80}
               className="w-20 h-20 rounded-full object-cover border-2 border-brand-pink"
             />
           ) : (
