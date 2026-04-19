@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
+import { stationRoutes } from "./routes/stations.js";
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -15,6 +16,8 @@ export async function buildApp() {
   app.get("/health", async () => {
     return { status: "ok", timestamp: new Date().toISOString() };
   });
+
+  app.register(stationRoutes);
 
   return app;
 }
