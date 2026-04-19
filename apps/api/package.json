@@ -1,5 +1,8 @@
 {
   "name": "@ownradio/api",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "version": "1.0.0",
   "private": true,
   "scripts": {
