@@ -1,0 +1,93 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Station {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  description  String
+  streamUrl    String        @map("stream_url")
+  metadataUrl  String        @map("metadata_url")
+  genre        String
+  artworkUrl   String?       @map("artwork_url")
+  isLive       Boolean       @default(false) @map("is_live")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  dj           DJ?
+  songs        Song[]
+  reactions    Reaction[]
+  chatMessages ChatMessage[]
+
+  @@map("stations")
+}
+
+model DJ {
+  id        String  @id @default(cuid())
+  stationId String  @unique @map("station_id")
+  name      String
+  bio       String
+  avatarUrl String? @map("avatar_url")
+  station   Station @relation(fields: [stationId], references: [id])
+
+  @@map("djs")
+}
+
+model Listener {
+  id           String        @id @default(cuid())
+  username     String        @unique
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  reactions    Reaction[]
+  chatMessages ChatMessage[]
+
+  @@map("listeners")
+}
+
+model Song {
+  id            String     @id @default(cuid())
+  stationId     String     @map("station_id")
+  title         String
+  artist        String
+  albumCoverUrl String?    @map("album_cover_url")
+  playedAt      DateTime   @default(now()) @map("played_at")
+  duration      Int?
+  station       Station    @relation(fields: [stationId], references: [id])
+  reactions     Reaction[]
+
+  @@map("songs")
+}
+
+model Reaction {
+  id         String    @id @default(cuid())
+  stationId  String    @map("station_id")
+  songId     String    @map("song_id")
+  listenerId String?   @map("listener_id")
+  type       String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  station    Station   @relation(fields: [stationId], references: [id])
+  song       Song      @relation(fields: [songId], references: [id])
+  listener   Listener? @relation(fields: [listenerId], references: [id])
+
+  @@index([stationId, songId])
+  @@map("reactions")
+}
+
+model ChatMessage {
+  id          String    @id @default(cuid())
+  stationId   String    @map("station_id")
+  listenerId  String?   @map("listener_id")
+  displayName String    @map("display_name")
+  content     String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  station     Station   @relation(fields: [stationId], references: [id])
+  listener    Listener? @relation(fields: [listenerId], references: [id])
+
+  @@map("chat_messages")
+}
