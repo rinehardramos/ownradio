@@ -1,8 +1,10 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
+import { Server as IOServer } from "socket.io";
 import { stationRoutes } from "./routes/stations.js";
 import { authRoutes } from "./routes/auth.js";
+import { setupSocketHandlers } from "./ws/index.js";
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -28,6 +30,13 @@ async function start() {
   const app = await buildApp();
   const port = Number(process.env.PORT) || 4000;
   await app.listen({ port, host: "0.0.0.0" });
+  const io = new IOServer(app.server, {
+    cors: {
+      origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
+      credentials: true,
+    },
+  });
+  setupSocketHandlers(io);
 }
 
 if (process.env.NODE_ENV !== "test") {
