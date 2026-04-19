@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import { stationRoutes } from "./routes/stations.js";
+import { authRoutes } from "./routes/auth.js";
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -18,6 +19,7 @@ export async function buildApp() {
   });
 
   app.register(stationRoutes);
+  app.register(authRoutes);
 
   return app;
 }
