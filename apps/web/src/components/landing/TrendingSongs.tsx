@@ -12,9 +12,9 @@ interface TrendingSongsProps {
 
 export function TrendingSongs({ songs }: TrendingSongsProps) {
   return (
-    <section className="w-full py-8 px-6">
+    <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Trending Songs</h2>
-      <ol className="flex flex-col gap-3">
+      <ol className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {songs.map((item, index) => (
           <li
             key={item.song.id}

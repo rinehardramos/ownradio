@@ -31,12 +31,12 @@ export function LoginSection() {
   }
 
   return (
-    <section className="w-full py-10 px-6 text-center">
+    <section className="w-full py-10 text-center">
       <h2 className="text-xl font-bold text-white mb-2">Join the crowd</h2>
       <p className="text-sm text-white/50 mb-7">
         Listen live. React. Chat. No setup needed.
       </p>
-
+      <div className="mx-auto max-w-sm">
       {/* Google OAuth button */}
       <button
         type="button"
@@ -76,6 +76,7 @@ export function LoginSection() {
       >
         Continue as guest
       </Link>
+      </div>
     </section>
   );
 }

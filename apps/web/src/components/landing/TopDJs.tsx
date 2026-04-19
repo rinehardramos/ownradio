@@ -14,8 +14,8 @@ const AVATAR_GRADIENTS = [
 export function TopDJs({ djs }: TopDJsProps) {
   return (
     <section className="w-full py-8">
-      <h2 className="px-6 text-lg font-bold text-white mb-4">Top DJs</h2>
-      <div className="flex gap-6 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <h2 className="text-lg font-bold text-white mb-4">Top DJs</h2>
+      <div className="flex gap-6 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {djs.map((dj, index) => (
           <div
             key={dj.id}

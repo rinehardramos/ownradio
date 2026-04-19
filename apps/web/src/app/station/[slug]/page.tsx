@@ -20,6 +20,10 @@ export default async function StationPage({ params }: StationPageProps) {
   }
 
   return (
-    <StationCarousel stations={MOCK_STATIONS} initialIndex={initialIndex} />
+    <div className="min-h-screen bg-brand-dark flex justify-center">
+      <div className="w-full max-w-[430px]">
+        <StationCarousel stations={MOCK_STATIONS} initialIndex={initialIndex} />
+      </div>
+    </div>
   );
 }

@@ -37,10 +37,12 @@ export default function Home() {
         listenerCount={totalListeners}
         djCount={djs.length}
       />
-      <FeaturedStations stations={MOCK_STATIONS} />
-      <TopDJs djs={djs} />
-      <TrendingSongs songs={songs} />
-      <LoginSection />
+      <div className="mx-auto w-full max-w-5xl px-4 sm:px-8">
+        <FeaturedStations stations={MOCK_STATIONS} />
+        <TopDJs djs={djs} />
+        <TrendingSongs songs={songs} />
+        <LoginSection />
+      </div>
     </main>
   );
 }

@@ -19,19 +19,18 @@ function getGradient(genre: string): string {
 export function FeaturedStations({ stations }: FeaturedStationsProps) {
   return (
     <section className="w-full py-8">
-      <h2 className="px-6 text-lg font-bold text-white mb-4">
-        Featured Stations
-      </h2>
-      <div className="flex gap-4 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
+      {/* Mobile: horizontal scroll — Desktop: grid */}
+      <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {stations.map((station) => (
           <Link
             key={station.id}
             href={`/station/${station.slug}`}
-            className="flex-none"
+            className="flex-none sm:flex-auto"
             style={{ width: 160 }}
           >
             <div
-              className={`relative flex flex-col justify-between rounded-2xl bg-gradient-to-br ${getGradient(station.genre)} p-4 h-48 cursor-pointer hover:opacity-90 transition-opacity`}
+              className={`relative flex flex-col justify-between rounded-2xl bg-gradient-to-br ${getGradient(station.genre)} p-4 h-48 cursor-pointer hover:opacity-90 transition-opacity w-full`}
             >
               {/* Live badge */}
               {station.isLive && (
