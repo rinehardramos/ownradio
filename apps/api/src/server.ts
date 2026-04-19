@@ -5,7 +5,7 @@ import { Server as IOServer } from "socket.io";
 import { stationRoutes } from "./routes/stations.js";
 import { authRoutes } from "./routes/auth.js";
 import { setupSocketHandlers } from "./ws/index.js";
-import { startMetadataPollers } from "./ws/metadata.js";
+import { startMetadataPollers, stopAllPollers } from "./ws/metadata.js";
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -38,7 +38,17 @@ async function start() {
     },
   });
   setupSocketHandlers(io);
-  startMetadataPollers(io); // Fire and forget — poller handles its own errors
+  startMetadataPollers(io).catch((err) => {
+    console.error("Failed to start metadata pollers:", err);
+  });
+
+  // Graceful shutdown
+  const shutdown = () => {
+    stopAllPollers();
+    app.close().then(() => process.exit(0));
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 if (process.env.NODE_ENV !== "test") {
