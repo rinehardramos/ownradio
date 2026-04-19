@@ -5,6 +5,7 @@ import { Server as IOServer } from "socket.io";
 import { stationRoutes } from "./routes/stations.js";
 import { authRoutes } from "./routes/auth.js";
 import { setupSocketHandlers } from "./ws/index.js";
+import { startMetadataPollers } from "./ws/metadata.js";
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -37,6 +38,7 @@ async function start() {
     },
   });
   setupSocketHandlers(io);
+  startMetadataPollers(io); // Fire and forget — poller handles its own errors
 }
 
 if (process.env.NODE_ENV !== "test") {
