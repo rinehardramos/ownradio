@@ -1,28 +1,38 @@
-import { notFound, redirect } from "next/navigation";
-import { MOCK_STATIONS } from "@/lib/mock-data";
+import { notFound } from "next/navigation";
+import type { StationWithDJ } from "@ownradio/shared";
 import { StationCarousel } from "@/components/station/StationCarousel";
 
 interface StationPageProps {
   params: Promise<{ slug: string }>;
 }
 
+async function fetchStations(): Promise<StationWithDJ[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiUrl}/stations`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    return res.json() as Promise<StationWithDJ[]>;
+  } catch {
+    return [];
+  }
+}
+
 export default async function StationPage({ params }: StationPageProps) {
   const { slug } = await params;
+  const stations = await fetchStations();
 
-  const initialIndex = MOCK_STATIONS.findIndex((s) => s.slug === slug);
+  const initialIndex = stations.findIndex((s) => s.slug === slug);
 
   if (initialIndex === -1) {
-    const first = MOCK_STATIONS[0];
-    if (first) {
-      redirect(`/station/${first.slug}`);
-    }
     notFound();
   }
 
   return (
     <div className="min-h-screen bg-brand-dark flex justify-center">
       <div className="w-full max-w-[430px]">
-        <StationCarousel stations={MOCK_STATIONS} initialIndex={initialIndex} />
+        <StationCarousel stations={stations} initialIndex={initialIndex} />
       </div>
     </div>
   );

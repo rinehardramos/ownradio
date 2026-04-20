@@ -1,31 +1,41 @@
-import { MOCK_STATIONS } from "@/lib/mock-data";
+import type { StationWithDJ } from "@ownradio/shared";
 import { Hero } from "@/components/landing/Hero";
 import { FeaturedStations } from "@/components/landing/FeaturedStations";
 import { TopDJs } from "@/components/landing/TopDJs";
 import { TrendingSongs } from "@/components/landing/TrendingSongs";
 import { LoginSection } from "@/components/landing/LoginSection";
 
-export default function Home() {
-  // Derive unique DJs from stations
-  const djs = MOCK_STATIONS.flatMap((s) => (s.dj ? [s.dj] : []));
+async function fetchStations(): Promise<StationWithDJ[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiUrl}/stations`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    return res.json() as Promise<StationWithDJ[]>;
+  } catch {
+    return [];
+  }
+}
 
-  // Fixed mock reaction counts — stable across renders
-  const MOCK_REACTION_COUNTS = [74, 52, 31, 88];
+export default async function Home() {
+  const stations = await fetchStations();
 
-  // Derive trending songs with mock reaction counts
-  const songs = MOCK_STATIONS.flatMap((s, i) =>
+  const djs = stations.flatMap((s) => (s.dj ? [s.dj] : []));
+
+  const songs = stations.flatMap((s) =>
     s.currentSong
       ? [
           {
             song: s.currentSong,
             stationName: s.name,
-            reactionCount: MOCK_REACTION_COUNTS[i] ?? 20,
+            reactionCount: s.listenerCount ?? 0,
           },
         ]
       : []
   );
 
-  const totalListeners = MOCK_STATIONS.reduce(
+  const totalListeners = stations.reduce(
     (sum, s) => sum + (s.listenerCount ?? 0),
     0
   );
@@ -33,12 +43,12 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-brand-dark overflow-y-auto">
       <Hero
-        stationCount={MOCK_STATIONS.length}
+        stationCount={stations.length}
         listenerCount={totalListeners}
         djCount={djs.length}
       />
       <div className="mx-auto w-full max-w-5xl px-4 sm:px-8">
-        <FeaturedStations stations={MOCK_STATIONS} />
+        <FeaturedStations stations={stations} />
         <TopDJs djs={djs} />
         <TrendingSongs songs={songs} />
         <LoginSection />
