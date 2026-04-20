@@ -1,41 +1,54 @@
 # OwnRadio
 
-A mobile-first, multi-station radio listener platform. Browse live stations, react to songs, and chat in real time.
+A mobile-first, multi-station internet radio platform. Browse live stations, react to songs in real time, and chat with other listeners.
 
 ## Stack
 
-- **Frontend:** Next.js (App Router), Tailwind CSS v4, TypeScript
-- **Monorepo:** Turborepo
-- **Backend:** [PlayGen](https://github.com/...) — REST API serving stations, DJs, songs, auth
-- **Tests:** Playwright (Pixel 7 device emulation)
-
-## Prerequisites
-
-- Node.js 20+
-- PlayGen running locally (see PlayGen repo for setup)
+| Layer | Tech |
+|---|---|
+| Frontend | Next.js 15 (App Router), Tailwind CSS v4, TypeScript |
+| Backend | Fastify 5, Socket.io, Prisma 6, PostgreSQL |
+| Auth | JWT (7-day token), bcrypt |
+| Monorepo | Turborepo |
+| Tests | Vitest (unit), Playwright (E2E, Pixel 7) |
+| Infra | Docker Compose, GitHub Actions CI |
 
 ## Quickstart
 
 ```bash
-# Install dependencies
+# 1. Clone and install
+git clone git@github.com:rinehardramos/ownradio.git
+cd ownradio
 npm install
 
-# Set environment variables
+# 2. Set environment variables
 cp .env.example .env
-# Edit .env: set NEXT_PUBLIC_API_URL to your PlayGen gateway URL
+# Edit .env — fill in DATABASE_URL, JWT_SECRET, and optionally CORS_ORIGIN
 
-# Start dev server
+# 3. Start Postgres + API
+docker compose up db api -d
+
+# 4. Migrate schema and seed demo data
+cd apps/api
+npx prisma db push
+npx tsx prisma/seed.ts
+cd ../..
+
+# 5. Start the frontend
+cd apps/web
 npm run dev
 # Open http://localhost:3000
 ```
 
+Demo credentials: `demo@ownradio.com` / `demo1234`
+
 ## Development
 
 ```bash
-# Run all apps in dev mode
+# Run all apps in watch mode
 npm run dev
 
-# Typecheck
+# Typecheck all packages
 npx turbo typecheck
 
 # Lint
@@ -45,34 +58,47 @@ npx turbo lint
 ## Testing
 
 ```bash
-# Run mockup demo tests (no server needed)
-npx playwright test --project="Mobile Chrome"
+# Unit + integration tests (Vitest, no DB required)
+npx turbo test
 
-# Run Next.js app tests (requires dev server running)
-npm run dev &
+# E2E — Next.js app (requires dev server + API running)
 npx playwright test --project=nextjs-app
+
+# E2E — mockup demos (no server required)
+npx playwright test --project="Mobile Chrome"
 ```
 
 ## Architecture
 
 ```
 ownradio/
-├── apps/web/          # Next.js frontend
-│   ├── src/app/       # App Router pages
-│   ├── src/components/# UI components
-│   │   ├── landing/   # Landing page sections
-│   │   └── station/   # Station carousel + audio + chat
-│   ├── src/hooks/     # useAuth, useStation (mocked)
-│   └── src/lib/       # api.ts (PlayGen client), mock-data.ts
-├── packages/shared/   # Shared TypeScript types
-└── tests/             # Playwright E2E tests
+├── apps/
+│   ├── api/                  # Fastify backend
+│   │   ├── prisma/           # Schema + seed
+│   │   └── src/
+│   │       ├── routes/       # REST: /stations, /auth
+│   │       ├── ws/           # Socket.io: chat, reactions, metadata poller
+│   │       ├── lib/          # JWT helpers
+│   │       └── middleware/   # requireAuth
+│   └── web/                  # Next.js frontend
+│       └── src/
+│           ├── app/          # App Router pages
+│           ├── components/
+│           │   ├── landing/  # Hero, FeaturedStations, TopDJs, TrendingSongs, LoginSection
+│           │   └── station/  # StationCarousel, StationCard, AudioControls, ReactionBar, LiveChat, DJSection
+│           ├── hooks/        # useAuth, useStation (Socket.io real-time)
+│           └── lib/          # api.ts (HTTP client), socket.ts (Socket.io singleton)
+├── packages/
+│   └── shared/               # Shared TypeScript types (Station, Song, ChatMessage, …)
+└── tests/
+    ├── nextjs/               # Playwright E2E against Next.js app
+    └── *.spec.ts             # Playwright demos against mockup HTML
 ```
 
-## What's Mocked
+## How it works
 
-PlayGen has no listener-facing features. These are mocked locally:
-- Reactions (rock/heart/broken_heart/party) — local state
-- Live chat messages — local state
-- Listener count — random on mount
-
-These will be replaced with real PlayGen endpoints once the listener features are built.
+- **Audio**: browser `<audio>` element streams directly from Icecast/Shoutcast — the backend only handles metadata.
+- **Now Playing**: API polls each live station's metadata endpoint every 5 s, saves new songs to DB, broadcasts `now_playing` over Socket.io.
+- **Reactions**: toggle (create/delete) per listener per song, debounced 500 ms, broadcast as `reaction_update` with grouped counts.
+- **Chat**: authenticated messages (1–280 chars) saved to DB, broadcast as `new_message` to station room.
+- **Listener count**: tracked per Socket.io room, broadcast on join/leave/disconnect.
