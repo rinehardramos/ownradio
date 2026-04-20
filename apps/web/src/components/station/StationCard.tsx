@@ -44,7 +44,7 @@ export function StationCard({ station, isActive }: StationCardProps) {
 
   function handleSend(content: string) {
     if (!user) return;
-    sendMessage(content, user);
+    sendMessage(content);
   }
 
   return (
