@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Listener } from "@ownradio/shared";
-import { getMe, login as apiLogin, logout as apiLogout } from "../lib/api";
-
-const ACCESS_TOKEN_KEY = "ownradio_access_token";
-const REFRESH_TOKEN_KEY = "ownradio_refresh_token";
+import { getMe, login as apiLogin, logout as apiLogout, getToken } from "../lib/api";
+import { reconnectSocket } from "../lib/socket";
 
 interface UseAuthReturn {
   user: Listener | null;
@@ -19,10 +17,7 @@ export function useAuth(): UseAuthReturn {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem(ACCESS_TOKEN_KEY)
-        : null;
+    const token = getToken();
 
     async function restoreSession() {
       if (!token) {
@@ -33,9 +28,8 @@ export function useAuth(): UseAuthReturn {
         const me = await getMe();
         setUser(me);
       } catch {
-        // Token invalid or expired and refresh also failed — clear storage
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        // Token invalid or expired — clear it
+        apiLogout();
       } finally {
         setIsLoading(false);
       }
@@ -46,18 +40,14 @@ export function useAuth(): UseAuthReturn {
 
   const login = useCallback(async (email: string, password: string) => {
     const data = await apiLogin(email, password);
-    // If PlayGen returns the user object inline, use it; otherwise fetch /me
-    if (data.user) {
-      setUser(data.user);
-    } else {
-      const me = await getMe();
-      setUser(me);
-    }
+    setUser(data.user);
+    reconnectSocket(); // re-auth the socket with the new token
   }, []);
 
   const logout = useCallback(() => {
     apiLogout();
     setUser(null);
+    reconnectSocket(); // reconnect as anonymous
   }, []);
 
   return { user, isLoading, login, logout };
