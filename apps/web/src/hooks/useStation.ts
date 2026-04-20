@@ -54,10 +54,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     }
 
     function onReactionUpdate(data: { songId: string; counts: ReactionCounts }) {
-      if (
-        !currentSongRef.current ||
-        data.songId === currentSongRef.current.id
-      ) {
+      if (currentSongRef.current && data.songId === currentSongRef.current.id) {
         setReactions(data.counts);
       }
     }

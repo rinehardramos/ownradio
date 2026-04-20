@@ -1,4 +1,5 @@
 import type { StationWithDJ } from "@ownradio/shared";
+import { apiFetch } from "@/lib/api";
 import { Hero } from "@/components/landing/Hero";
 import { FeaturedStations } from "@/components/landing/FeaturedStations";
 import { TopDJs } from "@/components/landing/TopDJs";
@@ -6,13 +7,8 @@ import { TrendingSongs } from "@/components/landing/TrendingSongs";
 import { LoginSection } from "@/components/landing/LoginSection";
 
 async function fetchStations(): Promise<StationWithDJ[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
   try {
-    const res = await fetch(`${apiUrl}/stations`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    return res.json() as Promise<StationWithDJ[]>;
+    return await apiFetch<StationWithDJ[]>("/stations");
   } catch {
     return [];
   }

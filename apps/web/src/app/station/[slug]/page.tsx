@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { StationWithDJ } from "@ownradio/shared";
+import { apiFetch } from "@/lib/api";
 import { StationCarousel } from "@/components/station/StationCarousel";
 
 interface StationPageProps {
@@ -7,13 +8,8 @@ interface StationPageProps {
 }
 
 async function fetchStations(): Promise<StationWithDJ[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
   try {
-    const res = await fetch(`${apiUrl}/stations`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    return res.json() as Promise<StationWithDJ[]>;
+    return await apiFetch<StationWithDJ[]>("/stations");
   } catch {
     return [];
   }
