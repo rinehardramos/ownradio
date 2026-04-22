@@ -12,6 +12,15 @@ const AVATAR_GRADIENTS = [
 ];
 
 export function TopDJs({ djs }: TopDJsProps) {
+  if (djs.length === 0) {
+    return (
+      <section className="w-full py-8">
+        <h2 className="text-lg font-bold text-white mb-4">Top DJs</h2>
+        <p className="text-sm text-white/40">No DJs online right now.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Top DJs</h2>

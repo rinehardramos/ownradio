@@ -17,64 +17,99 @@ function getGradient(genre: string): string {
 }
 
 export function FeaturedStations({ stations }: FeaturedStationsProps) {
+  if (stations.length === 0) {
+    return (
+      <section className="w-full py-8">
+        <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
+        <p className="text-sm text-white/40">No stations available right now. Check back soon!</p>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
       {/* Mobile: horizontal scroll — Desktop: grid */}
       <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {stations.map((station) => (
-          <Link
-            key={station.id}
-            href={`/station/${station.slug}`}
-            className="flex-none sm:flex-auto"
-            style={{ width: 160 }}
-          >
-            <div
-              className={`relative flex flex-col justify-between rounded-2xl bg-gradient-to-br ${getGradient(station.genre)} p-4 h-48 cursor-pointer hover:opacity-90 transition-opacity w-full`}
-            >
-              {/* Live badge */}
-              {station.isLive && (
-                <span className="self-start rounded-full bg-brand-pink px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                  LIVE
-                </span>
-              )}
+        {stations.map((station) => {
+          const isPlaceholder = !station.isLive && !station.streamUrl;
 
-              {/* Bottom info */}
-              <div className="mt-auto">
-                <p className="text-sm font-bold text-white leading-tight truncate">
-                  {station.name}
-                </p>
-                <span className="mt-1 inline-block rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-white/80">
-                  {station.genre}
-                </span>
-                {station.dj && (
-                  <p className="mt-1 text-xs text-white/70 truncate">
-                    {station.dj.name}
-                  </p>
-                )}
-                {station.currentSong && (
-                  <p className="mt-0.5 text-[11px] text-white/50 truncate">
-                    {station.currentSong.title}
-                  </p>
-                )}
-                <div className="mt-1 flex items-center gap-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="h-3 w-3 text-white/50"
-                    aria-hidden="true"
-                  >
-                    <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 11-4 0 2 2 0 014 0zM2 17a6 6 0 0116 0H2z" />
-                  </svg>
-                  <span className="text-[10px] text-white/50">
-                    {station.listenerCount ?? 50}
+          const card = (
+              <div
+                className={`relative flex flex-col justify-between rounded-2xl bg-gradient-to-br ${getGradient(station.genre)} p-4 h-48 ${isPlaceholder ? "opacity-60" : "cursor-pointer hover:opacity-90"} transition-opacity w-full`}
+              >
+                {/* Badge */}
+                {station.isLive ? (
+                  <span className="self-start rounded-full bg-brand-pink px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                    LIVE
                   </span>
+                ) : (
+                  <span className="self-start rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/70">
+                    COMING SOON
+                  </span>
+                )}
+
+                {/* Bottom info */}
+                <div className="mt-auto">
+                  <p className="text-sm font-bold text-white leading-tight truncate">
+                    {station.name}
+                  </p>
+                  <span className="mt-1 inline-block rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-white/80">
+                    {station.genre}
+                  </span>
+                  {station.dj && (
+                    <p className="mt-1 text-xs text-white/70 truncate">
+                      {station.dj.name}
+                    </p>
+                  )}
+                  {station.currentSong && (
+                    <p className="mt-0.5 text-[11px] text-white/50 truncate">
+                      {station.currentSong.title}
+                    </p>
+                  )}
+                  {station.isLive && (
+                    <div className="mt-1 flex items-center gap-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="h-3 w-3 text-white/50"
+                        aria-hidden="true"
+                      >
+                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 11-4 0 2 2 0 014 0zM2 17a6 6 0 0116 0H2z" />
+                      </svg>
+                      <span className="text-[10px] text-white/50">
+                        {station.listenerCount ?? 0}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+          );
+
+          if (isPlaceholder) {
+            return (
+              <div
+                key={station.id}
+                className="flex-none sm:flex-auto"
+                style={{ width: 160 }}
+              >
+                {card}
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={station.id}
+              href={`/station/${station.slug}`}
+              className="flex-none sm:flex-auto"
+              style={{ width: 160 }}
+            >
+              {card}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

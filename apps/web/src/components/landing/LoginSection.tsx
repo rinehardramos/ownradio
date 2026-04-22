@@ -21,7 +21,7 @@ export function LoginSection() {
           Welcome back, {user.username}!
         </p>
         <Link
-          href="/station/rock-haven"
+          href="/station/ownradio"
           className="inline-block rounded-full bg-brand-pink px-8 py-3 text-sm font-bold text-white hover:bg-brand-pink-light transition-colors"
         >
           Go to stations
@@ -71,7 +71,7 @@ export function LoginSection() {
 
       {/* Guest link */}
       <Link
-        href="/station/rock-haven"
+        href="/station/ownradio"
         className="text-sm text-white/40 hover:text-white/60 transition-colors"
       >
         Continue as guest

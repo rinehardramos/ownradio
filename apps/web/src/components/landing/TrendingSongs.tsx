@@ -11,6 +11,15 @@ interface TrendingSongsProps {
 }
 
 export function TrendingSongs({ songs }: TrendingSongsProps) {
+  if (songs.length === 0) {
+    return (
+      <section className="w-full py-8">
+        <h2 className="text-lg font-bold text-white mb-4">Trending Songs</h2>
+        <p className="text-sm text-white/40">No songs playing right now.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Trending Songs</h2>

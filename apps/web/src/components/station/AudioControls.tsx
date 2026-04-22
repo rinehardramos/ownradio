@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import Hls from "hls.js";
 
 interface AudioControlsProps {
   streamUrl: string;
@@ -9,8 +10,49 @@ interface AudioControlsProps {
 
 export function AudioControls({ streamUrl, isActive }: AudioControlsProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
+
+  // HLS.js setup for .m3u8 streams (Chrome/Firefox)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Clean up previous HLS instance
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    const isHls = streamUrl.endsWith(".m3u8");
+
+    if (isHls && Hls.isSupported()) {
+      const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+      hls.loadSource(streamUrl);
+      hls.attachMedia(audio);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log("[HLS] Manifest loaded, ready to play");
+      });
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        console.error("[HLS] Error:", data.type, data.details);
+      });
+      hlsRef.current = hls;
+    } else if (isHls && audio.canPlayType("application/vnd.apple.mpegurl")) {
+      // Safari native HLS
+      audio.src = streamUrl;
+    } else {
+      // Direct stream (Icecast, etc.)
+      audio.src = streamUrl;
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [streamUrl]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -109,10 +151,9 @@ export function AudioControls({ streamUrl, isActive }: AudioControlsProps) {
         )}
       </button>
 
-      {/* Hidden audio element */}
+      {/* Hidden audio element — src managed by HLS.js or useEffect */}
       <audio
         ref={audioRef}
-        src={streamUrl}
         preload="none"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
