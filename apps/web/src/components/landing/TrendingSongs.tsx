@@ -1,5 +1,5 @@
 import type { Song } from "@ownradio/shared";
-import { SONG_PLACEHOLDER } from "@/lib/placeholders";
+import { getSongPlaceholder } from "@/lib/placeholders";
 
 interface TrendingSong {
   song: Song;
@@ -30,7 +30,7 @@ export function TrendingSongs({ songs }: TrendingSongsProps) {
             <span style={{ width: '20px', fontSize: '13px', fontWeight: 700, color: 'var(--text-tertiary)', textAlign: 'center', flexShrink: 0 }}>{index + 1}</span>
             <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', flexShrink: 0 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.song.albumCoverUrl || SONG_PLACEHOLDER} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={getSongPlaceholder(item.song.id, item.song.albumCoverUrl)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: '14px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.song.title}</div>

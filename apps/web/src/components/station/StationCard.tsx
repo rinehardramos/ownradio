@@ -12,7 +12,7 @@ import { ReactionBar } from "./ReactionBar";
 import { PlaylistModal } from "./PlaylistModal";
 import { TopSongsModal } from "./TopSongsModal";
 import { FansModal } from "./FansModal";
-import { getStationPlaceholder } from "@/lib/placeholders";
+import { getStationPlaceholder, getDJPlaceholder, getSongPlaceholder } from "@/lib/placeholders";
 
 interface StationCardProps {
   station: StationWithDJ;
@@ -178,16 +178,12 @@ export function StationCard({
               overflow: "hidden",
             }}
           >
-            {currentSong?.albumCoverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={currentSong.albumCoverUrl}
-                alt={currentSong.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              "🎵"
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={getSongPlaceholder(currentSong?.id, currentSong?.albumCoverUrl)}
+              alt={currentSong?.title ?? ""}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -281,16 +277,17 @@ export function StationCard({
                 width: "40px",
                 height: "40px",
                 borderRadius: "50%",
-                background: "rgba(255,45,120,0.2)",
                 border: "1px solid rgba(255,45,120,0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "18px",
                 flexShrink: 0,
+                overflow: "hidden",
               }}
             >
-              🎧
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={getDJPlaceholder(station.dj?.id ?? activeDj?.djId, station.dj?.avatarUrl)}
+                alt={djName ?? "DJ"}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
             </div>
             <div style={{ minWidth: 0 }}>
               <p
