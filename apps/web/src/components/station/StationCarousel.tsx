@@ -143,10 +143,7 @@ function StationCarouselInner({
               streamUrl={i === currentIndex ? (streamUrl ?? null) : null}
               activeDj={i === currentIndex ? activeDj : null}
               listenerCount={i === currentIndex ? listenerCount : 0}
-              messages={i === currentIndex ? messages : []}
-              user={user}
               onReact={sendReaction}
-              onSendMessage={sendMessage}
               onPlayStateChange={setIsPlaying}
               onVolumeChange={setVolume}
               audioRef={i === currentIndex ? audioRef : undefined}

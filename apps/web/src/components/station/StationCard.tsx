@@ -5,9 +5,7 @@ import type {
   StationWithDJ,
   ReactionType,
   Song,
-  ChatMessage,
   DjSwitchPayload,
-  Listener,
 } from "@ownradio/shared";
 import { AudioControls, type AudioControlsHandle } from "./AudioControls";
 import { ReactionBar } from "./ReactionBar";
@@ -24,10 +22,7 @@ interface StationCardProps {
   streamUrl: string | null;
   activeDj: DjSwitchPayload | null;
   listenerCount: number;
-  messages: ChatMessage[];
-  user: Listener | null;
   onReact: (type: ReactionType) => void;
-  onSendMessage: (text: string) => void;
   onPlayStateChange: (playing: boolean) => void;
   onVolumeChange: (volume: number) => void;
   audioRef?: React.RefObject<AudioControlsHandle | null>;
@@ -43,7 +38,6 @@ export function StationCard({
   streamUrl,
   activeDj,
   listenerCount,
-  // user and onSendMessage are part of the prop contract but consumed by parent (AppShell/ChatPanel)
   onReact,
   onPlayStateChange,
   onVolumeChange,
