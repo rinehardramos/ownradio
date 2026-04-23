@@ -92,16 +92,10 @@ jobs:
         id: version
         run: echo "version=$(npx tsx scripts/version.ts)" >> "$GITHUB_OUTPUT"
 
-      - name: Validate required env vars
-        run: npx tsx scripts/validate-env.ts --app=web
-        env:
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_WS_URL: ${{ vars.NEXT_PUBLIC_WS_URL }}
-
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build
+      - name: Build (env validation runs inside next.config.ts)
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           BUILD_VERSION: ${{ steps.version.outputs.version }}
