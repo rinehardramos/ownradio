@@ -15,7 +15,8 @@ function verifySecret(req: { headers: Record<string, string | string[] | undefin
  * Internal webhook routes called by PlayGen to control OwnRadio streams.
  * Requires X-PlayGen-Secret header matching PLAYGEN_WEBHOOK_SECRET env var.
  */
-export function buildWebhookRoutes(io: IOServer): FastifyPluginAsync {
+// Accept a getter so the route can be registered before io is created
+export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
   return async (app) => {
     // POST /webhooks/stations/:slug/stream-control
     app.post<{
@@ -30,7 +31,7 @@ export function buildWebhookRoutes(io: IOServer): FastifyPluginAsync {
       if (!payload?.action) {
         return reply.status(400).send({ error: "action required" });
       }
-      io.to(`station:${slug}`).emit("stream_control", payload);
+      getIo().to(`station:${slug}`).emit("stream_control", payload);
       return { ok: true };
     });
 
@@ -47,7 +48,7 @@ export function buildWebhookRoutes(io: IOServer): FastifyPluginAsync {
       if (!payload?.djId || !payload?.name) {
         return reply.status(400).send({ error: "djId and name required" });
       }
-      io.to(`station:${slug}`).emit("dj_switch", payload);
+      getIo().to(`station:${slug}`).emit("dj_switch", payload);
       return { ok: true };
     });
   };

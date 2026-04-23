@@ -31,16 +31,23 @@ export async function buildApp() {
 async function start() {
   const app = await buildApp();
   const port = Number(process.env.PORT) || 4000;
+
+  // socket.io attaches to the raw http.Server which isn't created until listen(),
+  // so we use a deferred pattern: create io after listen, but register routes
+  // before listen using a placeholder that we fill in right after.
+  let ioRef: IOServer;
+  app.register(buildWebhookRoutes(() => ioRef));
+
   await app.listen({ port, host: "0.0.0.0" });
-  const io = new IOServer(app.server, {
+
+  ioRef = new IOServer(app.server, {
     cors: {
       origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
       credentials: true,
     },
   });
-  setupSocketHandlers(io);
-  app.register(buildWebhookRoutes(io));
-  startMetadataPollers(io).catch((err) => {
+  setupSocketHandlers(ioRef);
+  startMetadataPollers(ioRef).catch((err) => {
     console.error("Failed to start metadata pollers:", err);
   });
 
