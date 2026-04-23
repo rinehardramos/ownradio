@@ -25,20 +25,28 @@ OwnRadio is a multi-station listener-facing web platform that wraps external aud
 ### System Diagram
 
 ```
-┌─────────────┐     ┌──────────────────────┐     ┌────────────────┐
-│  Next.js    │────▶│  Fastify API Server  │────▶│  PostgreSQL    │
-│  Frontend   │     │  (REST + WebSocket)  │     │  (Neon)        │
-│  (Vercel)   │◀────│  (Railway/Render)    │     └────────────────┘
-└─────┬───────┘     └──────────┬───────────┘
+┌──────────────────────────────────────┐
+│  PlayGen (external)                  │
+│  DJ Service → nginx /stream/*        │──────────────────────────────┐
+│  Station Service → streamControl     │──────────────────────────────│──┐
+└──────────────────────────────────────┘                              │  │
+                                                                      │  │ POST /webhooks/...
+┌─────────────┐     ┌──────────────────────┐     ┌────────────────┐  │  │
+│  Next.js    │────▶│  Fastify API Server  │────▶│  PostgreSQL    │  │  │
+│  Frontend   │     │  (REST + Socket.io)  │◀────│  (Neon)        │  │  │
+│  (Vercel)   │◀────│  (Railway)           │     └────────────────┘  │  │
+└─────┬───────┘     └──────────┬───────────┘◀──────────────────────────┘
       │                        │
-      │  Audio stream          │  Polls metadata
-      ▼                        ▼
-┌─────────────┐     ┌──────────────────────┐
-│  Browser    │     │  Icecast/Shoutcast   │
-│  <audio>    │────▶│  Stream Server       │
-│  element    │     │  (DJ-managed)        │
-└─────────────┘     └──────────────────────┘
+      │  HLS (.m3u8) or        │  Polls Icecast/Shoutcast metadata (5 s)
+      │  direct stream         ▼
+      ▼            ┌──────────────────────┐
+┌─────────────┐   │  Icecast/Shoutcast   │
+│  HLS.js or  │──▶│  Stream Server       │
+│  <audio>    │   │  (DJ-managed)        │
+└─────────────┘   └──────────────────────┘
 ```
+
+For the full PlayGen HLS streaming flow, see `docs/superpowers/specs/2026-04-23-playgen-hls-streaming.md`.
 
 ### Stack
 
@@ -69,9 +77,9 @@ ownradio/
 
 ### Key Architectural Decisions
 
-1. **Audio flows directly from stream to browser** — our backend never touches audio data. The `<audio>` element connects to the DJ's stream URL.
+1. **Audio flows directly from stream to browser** — for Icecast/Shoutcast stations the backend never touches audio data; the `<audio>` element connects to the station's stream URL. For PlayGen AI-generated shows, `AudioControls` uses HLS.js to play a `.m3u8` playlist URL delivered via a `stream_control` Socket.io event.
 2. **Backend polls stream metadata** — Fastify polls the Icecast/Shoutcast status endpoint every 5s, extracts now-playing info, broadcasts to listeners via WebSocket.
-3. **Socket.io for real-time** — handles chat, reactions, now-playing updates, and live listener count. Sufficient for <100 concurrent listeners per station.
+3. **Socket.io for real-time** — handles chat, reactions, now-playing updates, live listener count, and PlayGen webhook relay (`stream_control`, `dj_switch`). Sufficient for <100 concurrent listeners per station.
 4. **Anonymous + optional auth** — anyone can listen and react; login required for chat and leaderboard tracking.
 
 ---
@@ -272,6 +280,21 @@ Full-screen overlay with:
 | new_message | { display_name, content, created_at } | Chat message |
 | listener_count | { count } | Live listener count update |
 | station_status | { is_live } | Station online/offline |
+| stream_control | { action, streamUrl? } | PlayGen stream URL change / stop / resume |
+| dj_switch | { djId, name, voiceStyle? } | Active DJ changed by PlayGen |
+
+> `stream_control` and `dj_switch` are emitted by the API webhook relay when PlayGen posts to `/webhooks/stations/:slug/stream-control` or `/webhooks/stations/:slug/dj-switch`. The `AudioControls` component handles `.m3u8` URLs via HLS.js automatically.
+
+---
+
+## Webhook Endpoints
+
+These endpoints are not part of the public REST API. They are called server-to-server by PlayGen and secured with a shared `X-PlayGen-Secret` header.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /webhooks/stations/:slug/stream-control | Change stream URL, stop, or resume playback |
+| POST | /webhooks/stations/:slug/dj-switch | Notify listeners that the active DJ has changed |
 
 ---
 

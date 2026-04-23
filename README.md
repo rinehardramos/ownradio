@@ -70,17 +70,19 @@ npx playwright test --project="Mobile Chrome"
 
 ## Architecture
 
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full system diagram, WebSocket event reference, webhook endpoints, and the PlayGen HLS streaming flow.
+
 ```
 ownradio/
 ├── apps/
 │   ├── api/                  # Fastify backend
 │   │   ├── prisma/           # Schema + seed
 │   │   └── src/
-│   │       ├── routes/       # REST: /stations, /auth
+│   │       ├── routes/       # REST: /stations, /auth, /webhooks
 │   │       ├── ws/           # Socket.io: chat, reactions, metadata poller
 │   │       ├── lib/          # JWT helpers
 │   │       └── middleware/   # requireAuth
-│   └── web/                  # Next.js frontend
+│   └── web/                  # Next.js 15 frontend
 │       └── src/
 │           ├── app/          # App Router pages
 │           ├── components/
@@ -89,7 +91,7 @@ ownradio/
 │           ├── hooks/        # useAuth, useStation (Socket.io real-time)
 │           └── lib/          # api.ts (HTTP client), socket.ts (Socket.io singleton)
 ├── packages/
-│   └── shared/               # Shared TypeScript types (Station, Song, ChatMessage, …)
+│   └── shared/               # Shared TypeScript types (Station, Song, ChatMessage, StreamControlPayload, …)
 └── tests/
     ├── nextjs/               # Playwright E2E against Next.js app
     └── *.spec.ts             # Playwright demos against mockup HTML
@@ -97,8 +99,10 @@ ownradio/
 
 ## How it works
 
-- **Audio**: browser `<audio>` element streams directly from Icecast/Shoutcast — the backend only handles metadata.
+- **Audio (direct)**: for Icecast/Shoutcast stations the browser `<audio>` element connects directly to the stream URL — the backend only handles metadata.
+- **Audio (HLS)**: for PlayGen AI-generated shows, `AudioControls` uses HLS.js to play a `.m3u8` playlist. The stream URL arrives via a `stream_control` Socket.io event pushed by the PlayGen webhook.
 - **Now Playing**: API polls each live station's metadata endpoint every 5 s, saves new songs to DB, broadcasts `now_playing` over Socket.io.
 - **Reactions**: toggle (create/delete) per listener per song, debounced 500 ms, broadcast as `reaction_update` with grouped counts.
 - **Chat**: authenticated messages (1–280 chars) saved to DB, broadcast as `new_message` to station room.
 - **Listener count**: tracked per Socket.io room, broadcast on join/leave/disconnect.
+- **Webhooks**: `POST /webhooks/stations/:slug/stream-control` and `POST /webhooks/stations/:slug/dj-switch` receive events from PlayGen and relay them to the station's Socket.io room.
