@@ -17,7 +17,7 @@ interface UseStationReturn {
   reactions: ReactionCounts;
   messages: ChatMessage[];
   listenerCount: number;
-  activeReactions: Set<ReactionType>;
+  activeReaction: ReactionType | null;
   /** Current stream URL — updates on stream_control url_change events */
   streamUrl: string | null;
   /** False while stream is stopped by a stream_control stop event */
@@ -33,18 +33,17 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     station.currentSong ?? null
   );
   const [reactions, setReactions] = useState<ReactionCounts>({
-    heart: 0,
     rock: 0,
-    broken_heart: 0,
-    party: 0,
+    love: 0,
+    vibe: 0,
+    sleepy: 0,
+    nah: 0,
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [listenerCount, setListenerCount] = useState<number>(
     station.listenerCount ?? 0
   );
-  const [activeReactions, setActiveReactions] = useState<Set<ReactionType>>(
-    new Set()
-  );
+  const [activeReaction, setActiveReaction] = useState<ReactionType | null>(null);
   const [streamUrl, setStreamUrl] = useState<string | null>(
     station.streamUrl ?? null
   );
@@ -64,6 +63,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
 
     function onNowPlaying(song: Song) {
       setCurrentSong(song);
+      setActiveReaction(null); // reset on song change
     }
 
     function onReactionUpdate(data: { songId: string; counts: ReactionCounts }) {
@@ -117,28 +117,18 @@ export function useStation(station: StationWithDJ): UseStationReturn {
 
   const sendReaction = useCallback(
     (type: ReactionType) => {
-      const song = currentSongRef.current;
-      if (!song) return;
-
-      // Optimistic toggle
-      setActiveReactions((prev) => {
-        const next = new Set(prev);
-        if (next.has(type)) {
-          next.delete(type);
-        } else {
-          next.add(type);
-        }
-        return next;
-      });
-
-      const socket = getSocket();
-      socket.emit("reaction", {
-        songId: song.id,
-        stationId: station.id,
-        type,
-      });
+      const next = activeReaction === type ? null : type;
+      setActiveReaction(next);
+      if (next !== null) {
+        const socket = getSocket();
+        socket.emit("reaction", {
+          songId: currentSong?.id,
+          stationId: station.id,
+          type: next,
+        });
+      }
     },
-    [station.id]
+    [activeReaction, currentSong, station.id]
   );
 
   const sendMessage = useCallback(
@@ -157,7 +147,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     reactions,
     messages,
     listenerCount,
-    activeReactions,
+    activeReaction,
     streamUrl,
     streamActive,
     activeDj,
