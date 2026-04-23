@@ -31,7 +31,7 @@ export interface Song {
   duration: number | null;
 }
 
-export type ReactionType = "heart" | "rock" | "party" | "broken_heart";
+export type ReactionType = "rock" | "love" | "vibe" | "sleepy" | "nah";
 
 export interface Reaction {
   id: string;
@@ -43,10 +43,11 @@ export interface Reaction {
 }
 
 export interface ReactionCounts {
-  heart: number;
   rock: number;
-  party: number;
-  broken_heart: number;
+  love: number;
+  vibe: number;
+  sleepy: number;
+  nah: number;
 }
 
 export interface ChatMessage {
