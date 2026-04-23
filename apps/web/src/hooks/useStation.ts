@@ -7,6 +7,8 @@ import type {
   ReactionType,
   ReactionCounts,
   ChatMessage,
+  StreamControlPayload,
+  DjSwitchPayload,
 } from "@ownradio/shared";
 import { getSocket } from "../lib/socket";
 
@@ -16,6 +18,12 @@ interface UseStationReturn {
   messages: ChatMessage[];
   listenerCount: number;
   activeReactions: Set<ReactionType>;
+  /** Current stream URL — updates on stream_control url_change events */
+  streamUrl: string | null;
+  /** False while stream is stopped by a stream_control stop event */
+  streamActive: boolean;
+  /** Currently active DJ info from dj_switch events */
+  activeDj: DjSwitchPayload | null;
   sendReaction: (type: ReactionType) => void;
   sendMessage: (content: string) => void;
 }
@@ -37,6 +45,11 @@ export function useStation(station: StationWithDJ): UseStationReturn {
   const [activeReactions, setActiveReactions] = useState<Set<ReactionType>>(
     new Set()
   );
+  const [streamUrl, setStreamUrl] = useState<string | null>(
+    station.streamUrl ?? null
+  );
+  const [streamActive, setStreamActive] = useState<boolean>(true);
+  const [activeDj, setActiveDj] = useState<DjSwitchPayload | null>(null);
 
   // Keep a ref to currentSong so event handlers always see the latest value
   const currentSongRef = useRef<Song | null>(currentSong);
@@ -69,10 +82,27 @@ export function useStation(station: StationWithDJ): UseStationReturn {
       }
     }
 
+    function onStreamControl(data: StreamControlPayload) {
+      if (data.action === 'url_change' && data.streamUrl) {
+        setStreamUrl(data.streamUrl);
+        setStreamActive(true);
+      } else if (data.action === 'stop') {
+        setStreamActive(false);
+      } else if (data.action === 'resume') {
+        setStreamActive(true);
+      }
+    }
+
+    function onDjSwitch(data: DjSwitchPayload) {
+      setActiveDj(data);
+    }
+
     socket.on("now_playing", onNowPlaying);
     socket.on("reaction_update", onReactionUpdate);
     socket.on("new_message", onNewMessage);
     socket.on("listener_count", onListenerCount);
+    socket.on("stream_control", onStreamControl);
+    socket.on("dj_switch", onDjSwitch);
 
     return () => {
       socket.emit("leave_station");
@@ -80,6 +110,8 @@ export function useStation(station: StationWithDJ): UseStationReturn {
       socket.off("reaction_update", onReactionUpdate);
       socket.off("new_message", onNewMessage);
       socket.off("listener_count", onListenerCount);
+      socket.off("stream_control", onStreamControl);
+      socket.off("dj_switch", onDjSwitch);
     };
   }, [station.slug]);
 
@@ -126,6 +158,9 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     messages,
     listenerCount,
     activeReactions,
+    streamUrl,
+    streamActive,
+    activeDj,
     sendReaction,
     sendMessage,
   };

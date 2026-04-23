@@ -4,6 +4,7 @@ import cookie from "@fastify/cookie";
 import { Server as IOServer } from "socket.io";
 import { stationRoutes } from "./routes/stations.js";
 import { authRoutes } from "./routes/auth.js";
+import { buildWebhookRoutes } from "./routes/webhooks.js";
 import { setupSocketHandlers } from "./ws/index.js";
 import { startMetadataPollers, stopAllPollers } from "./ws/metadata.js";
 
@@ -38,6 +39,7 @@ async function start() {
     },
   });
   setupSocketHandlers(io);
+  app.register(buildWebhookRoutes(io));
   startMetadataPollers(io).catch((err) => {
     console.error("Failed to start metadata pollers:", err);
   });
