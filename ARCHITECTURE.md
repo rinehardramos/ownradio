@@ -83,7 +83,7 @@ When a PlayGen DJ show is approved and published, the following sequence deliver
    → browser begins HLS playback
 ```
 
-**Status:** OwnRadio-side wiring is complete (steps 6–8). Steps 1–5 require three PlayGen-side changes (see `docs/superpowers/specs/2026-04-23-playgen-hls-streaming.md`).
+**Status:** Fully wired end-to-end as of 2026-04-23. OwnRadio-side (steps 6–8) was already complete. PlayGen-side (steps 1–5) — gateway `/stream/*` route, playout auto-start via `playoutTrigger.ts`, and R2 prefetch — are all now implemented.
 
 ---
 

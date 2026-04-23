@@ -4,9 +4,9 @@ All notable changes to OwnRadio are documented here.
 
 ## [Unreleased]
 
-### Design Confirmed — 2026-04-23
+### Added — 2026-04-23
 
-- **PlayGen HLS streaming integration design approved.** OwnRadio-side wiring is complete and requires no further code changes. Streaming will activate once three PlayGen-side wires are in place (gateway `/stream/*` location block, playout trigger in `manifestService.ts`, R2 prefetch constraint documented). See `docs/superpowers/specs/2026-04-23-playgen-hls-streaming.md` for the full spec.
+- **PlayGen HLS streaming wired end-to-end.** OwnRadio receives `stream_control` webhooks from PlayGen when a DJ show goes live. `useStation` hook updates `streamUrl`; `AudioControls.tsx` re-initialises HLS.js with the new `.m3u8` URL. All three PlayGen-side wires are now in place (gateway `/stream/*`, playout auto-start in DJ service, R2 prefetch). `PLAYGEN_WEBHOOK_SECRET` env var required on the OwnRadio API service to authenticate incoming webhooks.
 
 ## [MVP] — 2026-04-18
 
