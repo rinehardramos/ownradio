@@ -32,7 +32,7 @@ export function StationCard({ station, isActive }: StationCardProps) {
     reactions,
     messages,
     listenerCount,
-    activeReactions,
+    activeReaction,
     currentSong,
     sendReaction,
     sendMessage,
@@ -112,8 +112,7 @@ export function StationCard({ station, isActive }: StationCardProps) {
       {/* Reaction bar */}
       <div className="bg-brand-dark-card border-b border-brand-dark-border flex-shrink-0">
         <ReactionBar
-          reactions={reactions}
-          activeReactions={activeReactions}
+          activeReaction={activeReaction}
           onReact={sendReaction}
         />
       </div>
