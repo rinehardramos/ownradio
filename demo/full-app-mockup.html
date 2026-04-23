@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OwnRadio — Full App Mockup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg-primary: #0f0f1a;
+    --bg-secondary: #1a1a2e;
+    --bg-card: #1e1e32;
+    --bg-elevated: #252540;
+    --border-subtle: rgba(255,255,255,.06);
+    --border-medium: rgba(255,255,255,.1);
+    --pink: #ff2d78;
+    --pink-light: #ff6b9d;
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255,255,255,.65);
+    --text-tertiary: rgba(255,255,255,.4);
+    --text-muted: rgba(255,255,255,.25);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+    --shadow-card: 0 2px 8px rgba(0,0,0,.3);
+    --shadow-elevated: 0 8px 32px rgba(0,0,0,.5);
+    --t-fast: 150ms cubic-bezier(.4,0,.2,1);
+    --t-med: 300ms cubic-bezier(.4,0,.2,1);
+  }
+
+  body { font-family:'Inter',-apple-system,sans-serif; background:#0a0a12; color:var(--text-primary); -webkit-font-smoothing:antialiased; }
+
+  /* ── View Switcher ── */
+  .view-tabs {
+    position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:1000;
+    display:flex; gap:4px; padding:4px;
+    background:var(--bg-card); border-radius:var(--radius-full);
+    border:1px solid var(--border-medium); box-shadow:var(--shadow-elevated);
+  }
+  .view-tab {
+    padding:8px 20px; border-radius:var(--radius-full); border:none;
+    background:transparent; color:var(--text-secondary);
+    font-size:13px; font-weight:600; cursor:pointer; transition:all var(--t-fast);
+    font-family:inherit; white-space:nowrap;
+  }
+  .view-tab:hover { color:var(--text-primary); }
+  .view-tab.active { background:var(--pink); color:white; }
+
+  .view { display:none; }
+  .view.active { display:block; }
+
+  /* ══════════════════════════════════════════════════
+     VIEW 1: DESKTOP LANDING
+     ══════════════════════════════════════════════════ */
+  .desktop-landing {
+    max-width:1200px; margin:0 auto; padding:80px 40px 40px;
+  }
+
+  /* Hero */
+  .dl-hero {
+    text-align:center; padding:60px 20px 48px;
+    background:radial-gradient(ellipse at 50% 0%, rgba(255,45,120,.08), transparent 70%);
+  }
+  .dl-hero-icon { margin-bottom:20px; }
+  .dl-hero h1 {
+    font-size:56px; font-weight:900; letter-spacing:4px; text-transform:uppercase;
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    font-family:'Inter',monospace;
+  }
+  .dl-hero p { margin-top:10px; font-size:18px; color:var(--text-secondary); }
+  .dl-stats {
+    display:flex; justify-content:center; gap:48px; margin-top:32px;
+  }
+  .dl-stat-val { font-size:28px; font-weight:800; color:var(--pink); }
+  .dl-stat-label { font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin-top:4px; }
+  .dl-stat-divider { width:1px; background:var(--border-subtle); }
+
+  /* Section headers */
+  .dl-section { margin-top:48px; }
+  .dl-section-header {
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;
+  }
+  .dl-section-title { font-size:20px; font-weight:700; }
+  .dl-section-link { font-size:13px; color:var(--text-tertiary); text-decoration:none; }
+  .dl-section-link:hover { color:var(--pink-light); }
+
+  /* Station cards */
+  .dl-stations { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+  .dl-station-card {
+    border-radius:var(--radius-xl); overflow:hidden; cursor:pointer;
+    transition:all var(--t-fast); position:relative;
+  }
+  .dl-station-card:hover { transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,.5); }
+
+  .dl-station-img {
+    width:100%; aspect-ratio:1; object-fit:cover; display:block;
+  }
+  .dl-station-overlay {
+    position:absolute; inset:0;
+    background:linear-gradient(0deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.1) 50%, transparent 100%);
+    display:flex; flex-direction:column; justify-content:space-between; padding:14px;
+  }
+  .dl-station-badge {
+    align-self:flex-start; padding:3px 10px; border-radius:var(--radius-full);
+    font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.8px;
+  }
+  .dl-station-badge.live { background:rgba(34,197,94,.2); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+  .dl-station-badge.soon { background:rgba(255,255,255,.1); color:var(--text-muted); border:1px solid rgba(255,255,255,.08); }
+
+  .dl-station-info { display:flex; flex-direction:column; gap:4px; }
+  .dl-station-name { font-size:16px; font-weight:700; }
+  .dl-station-genre {
+    display:inline-block; padding:2px 8px; border-radius:var(--radius-full);
+    background:rgba(0,0,0,.4); font-size:10px; color:var(--text-secondary);
+    align-self:flex-start;
+  }
+  .dl-station-meta {
+    display:flex; align-items:center; gap:8px; margin-top:2px;
+  }
+  .dl-station-dj { font-size:11px; color:var(--text-secondary); }
+  .dl-station-song { font-size:10px; color:var(--text-muted); }
+  .dl-station-listeners {
+    display:flex; align-items:center; gap:3px; font-size:10px; color:var(--text-muted);
+  }
+  .dl-station-listeners::before { content:''; width:5px; height:5px; border-radius:50%; background:#22c55e; }
+
+  /* DJs */
+  .dl-djs { display:flex; gap:24px; overflow-x:auto; padding-bottom:8px; }
+  .dl-djs::-webkit-scrollbar { display:none; }
+
+  .dl-dj {
+    display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer;
+    flex-shrink:0; transition:transform var(--t-fast);
+  }
+  .dl-dj:hover { transform:scale(1.05); }
+
+  .dl-dj-avatar {
+    width:72px; height:72px; border-radius:50%; object-fit:cover;
+    border:3px solid transparent; position:relative;
+  }
+  .dl-dj-avatar.online { border-color:rgba(255,45,120,.4); }
+  .dl-dj-avatar-wrap { position:relative; }
+  .dl-dj-dot {
+    position:absolute; bottom:2px; right:2px;
+    width:14px; height:14px; border-radius:50%;
+    background:#22c55e; border:3px solid var(--bg-primary);
+  }
+  .dl-dj-name { font-size:12px; color:var(--text-secondary); text-align:center; max-width:72px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* Trending songs */
+  .dl-songs { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  .dl-song {
+    display:flex; align-items:center; gap:12px;
+    padding:12px 16px; border-radius:var(--radius-md);
+    background:var(--bg-card); border:1px solid var(--border-subtle);
+    transition:all var(--t-fast); cursor:pointer;
+  }
+  .dl-song:hover { background:var(--bg-elevated); border-color:var(--border-medium); }
+
+  .dl-song-rank { width:24px; text-align:center; font-size:14px; font-weight:700; color:var(--pink); flex-shrink:0; }
+  .dl-song-art { width:40px; height:40px; border-radius:var(--radius-sm); object-fit:cover; flex-shrink:0; }
+  .dl-song-info { flex:1; min-width:0; }
+  .dl-song-title { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .dl-song-artist { font-size:11px; color:var(--text-tertiary); margin-top:1px; }
+
+  /* CTA */
+  .dl-cta {
+    text-align:center; padding:48px 20px; margin-top:48px;
+    border-top:1px solid var(--border-subtle);
+  }
+  .dl-cta h2 { font-size:22px; font-weight:700; margin-bottom:8px; }
+  .dl-cta p { font-size:14px; color:var(--text-tertiary); margin-bottom:24px; }
+  .dl-cta-btn {
+    display:inline-block; padding:12px 32px; border-radius:var(--radius-full);
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    color:white; font-size:14px; font-weight:700; text-decoration:none;
+    box-shadow:0 4px 20px rgba(255,45,120,.3);
+    transition:all var(--t-fast);
+  }
+  .dl-cta-btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(255,45,120,.4); }
+
+  /* ══════════════════════════════════════════════════
+     VIEW 2: DESKTOP STATION
+     ══════════════════════════════════════════════════ */
+  .desktop-station { height:100vh; display:flex; padding-top:52px; }
+
+  .ds-sidebar {
+    width:240px; background:var(--bg-secondary);
+    border-right:1px solid var(--border-subtle);
+    display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto;
+  }
+  .ds-sidebar-logo { padding:20px; display:flex; align-items:center; gap:10px; }
+  .ds-sidebar-logo span {
+    font-size:16px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+
+  .ds-nav { padding:0 12px; display:flex; flex-direction:column; gap:2px; }
+  .ds-nav a {
+    display:flex; align-items:center; gap:12px; padding:10px 12px;
+    border-radius:var(--radius-sm); color:var(--text-secondary);
+    text-decoration:none; font-size:14px; font-weight:500; transition:all var(--t-fast);
+  }
+  .ds-nav a:hover { background:rgba(255,255,255,.05); color:var(--text-primary); }
+  .ds-nav a.active { background:rgba(255,45,120,.1); color:var(--pink-light); }
+  .ds-nav a svg { width:20px; height:20px; opacity:.7; flex-shrink:0; }
+
+  .ds-divider { height:1px; background:var(--border-subtle); margin:12px 20px; }
+  .ds-label { padding:8px 20px 4px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+
+  .ds-station-item {
+    display:flex; align-items:center; gap:10px; padding:8px 12px; margin:0 12px;
+    border-radius:var(--radius-sm); cursor:pointer; transition:background var(--t-fast);
+  }
+  .ds-station-item:hover { background:rgba(255,255,255,.05); }
+  .ds-station-item.active { background:rgba(255,45,120,.08); }
+  .ds-station-thumb { width:32px; height:32px; border-radius:var(--radius-sm); object-fit:cover; flex-shrink:0; }
+  .ds-station-item-name { font-size:13px; font-weight:500; color:var(--text-secondary); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ds-station-item.active .ds-station-item-name { color:var(--text-primary); }
+
+  .ds-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .ds-topbar {
+    height:52px; display:flex; align-items:center; padding:0 16px; gap:12px;
+    border-bottom:1px solid var(--border-subtle); background:var(--bg-secondary); flex-shrink:0;
+  }
+  .ds-icon-btn {
+    width:36px; height:36px; border-radius:var(--radius-sm);
+    border:1px solid var(--border-subtle); background:transparent;
+    color:var(--text-secondary); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:all var(--t-fast);
+  }
+  .ds-icon-btn:hover { background:rgba(255,255,255,.06); color:var(--text-primary); }
+  .ds-icon-btn.on { background:rgba(255,45,120,.1); border-color:rgba(255,45,120,.3); color:var(--pink-light); }
+
+  .ds-dots { flex:1; display:flex; justify-content:center; gap:6px; }
+  .ds-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.2); }
+  .ds-dot.active { width:18px; border-radius:3px; background:var(--pink); }
+
+  .ds-content-row { flex:1; display:flex; overflow:hidden; }
+
+  .ds-station-detail {
+    flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.1) transparent;
+  }
+
+  /* Hero with images */
+  .ds-hero-wrap { display:flex; gap:12px; }
+
+  .ds-hero {
+    flex:1; border-radius:var(--radius-xl); overflow:hidden;
+    position:relative; min-height:240px;
+    box-shadow:var(--shadow-elevated);
+  }
+  .ds-hero-bg {
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    filter:brightness(.6) saturate(1.2);
+  }
+  .ds-hero-gradient {
+    position:absolute; inset:0;
+    background:linear-gradient(0deg, rgba(15,15,26,.95) 0%, rgba(15,15,26,.4) 40%, transparent 100%);
+  }
+  .ds-hero-content {
+    position:relative; z-index:1; padding:28px;
+    display:flex; flex-direction:column; justify-content:space-between; height:100%;
+  }
+  .ds-hero-top { display:flex; align-items:center; justify-content:space-between; }
+
+  .ds-genre-badge {
+    padding:4px 14px; border-radius:var(--radius-full);
+    background:rgba(255,255,255,.12); backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.1);
+    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:rgba(255,255,255,.85);
+  }
+  .ds-live-ind {
+    display:flex; align-items:center; gap:6px; padding:4px 12px;
+    border-radius:var(--radius-full); background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3);
+  }
+  .ds-live-dot { width:6px; height:6px; border-radius:50%; background:#22c55e; animation:pulse-dot 2s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)} 50%{opacity:.8;box-shadow:0 0 0 4px rgba(34,197,94,0)} }
+  .ds-live-text { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#4ade80; }
+
+  .ds-hero-bottom { }
+  .ds-station-name { font-size:32px; font-weight:900; letter-spacing:-.5px; line-height:1.1; margin-bottom:12px; }
+
+  .ds-song-card {
+    display:flex; align-items:center; gap:12px; padding:12px 16px;
+    border-radius:var(--radius-md); background:rgba(0,0,0,.45);
+    backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.08);
+  }
+  .ds-song-art { width:48px; height:48px; border-radius:var(--radius-sm); object-fit:cover; flex-shrink:0; }
+  .ds-song-info { flex:1; min-width:0; }
+  .ds-song-title { font-size:14px; font-weight:600; }
+  .ds-song-artist { font-size:12px; color:var(--text-secondary); margin-top:1px; }
+  .ds-bars { display:flex; align-items:flex-end; gap:2px; height:18px; flex-shrink:0; margin-left:auto; }
+  .ds-bars span { width:3px; border-radius:1px; background:var(--pink); animation:bar 1.2s ease-in-out infinite; }
+  .ds-bars span:nth-child(1){height:35%;animation-delay:0s} .ds-bars span:nth-child(2){height:80%;animation-delay:.15s}
+  .ds-bars span:nth-child(3){height:55%;animation-delay:.3s} .ds-bars span:nth-child(4){height:95%;animation-delay:.1s}
+  @keyframes bar { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(.4)} }
+
+  /* Reaction strip */
+  .ds-reactions {
+    display:flex; flex-direction:column; justify-content:center; gap:6px;
+    padding:10px; border-radius:var(--radius-xl);
+    background:var(--bg-card); border:1px solid var(--border-medium);
+    box-shadow:var(--shadow-elevated); flex-shrink:0;
+  }
+  .ds-react-btn {
+    width:40px; height:40px; border-radius:50%; border:2px solid transparent;
+    background:transparent; cursor:pointer; font-size:18px;
+    display:flex; align-items:center; justify-content:center; transition:all var(--t-fast);
+  }
+  .ds-react-btn:hover { background:rgba(255,255,255,.06); transform:scale(1.15); }
+  .ds-react-btn.active { background:rgba(255,45,120,.12); border-color:rgba(255,45,120,.4); box-shadow:0 0 14px rgba(255,45,120,.25); }
+
+  /* Audio controls */
+  .ds-controls {
+    display:flex; align-items:center; gap:12px; padding:14px 18px;
+    border-radius:var(--radius-lg); background:var(--bg-card);
+    border:1px solid var(--border-subtle); box-shadow:var(--shadow-card);
+  }
+  .ds-vol-btn { background:none; border:none; cursor:pointer; font-size:16px; opacity:.5; padding:4px; }
+  .ds-vol-track { flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,.1); }
+  .ds-vol-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--pink),var(--pink-light)); width:72%; }
+  .ds-play-btn {
+    width:48px; height:48px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 16px rgba(255,45,120,.35); flex-shrink:0;
+  }
+  .ds-play-btn svg { fill:white; }
+
+  /* DJ card with image */
+  .ds-dj-card {
+    display:flex; align-items:center; gap:14px; padding:14px 18px;
+    border-radius:var(--radius-lg); background:var(--bg-card);
+    border:1px solid var(--border-subtle); box-shadow:var(--shadow-card);
+    cursor:pointer; transition:all var(--t-fast);
+  }
+  .ds-dj-card:hover { background:var(--bg-elevated); border-color:var(--border-medium); }
+
+  .ds-dj-avatar {
+    width:44px; height:44px; border-radius:50%; object-fit:cover;
+    border:2px solid rgba(255,45,120,.3); flex-shrink:0; position:relative;
+  }
+  .ds-dj-avatar-wrap { position:relative; flex-shrink:0; }
+  .ds-dj-online {
+    position:absolute; bottom:0; right:0; width:12px; height:12px;
+    border-radius:50%; background:#22c55e; border:2px solid var(--bg-card);
+  }
+  .ds-dj-name { font-size:14px; font-weight:600; }
+  .ds-dj-listeners { font-size:12px; color:var(--text-tertiary); margin-top:1px; }
+  .ds-dj-actions { margin-left:auto; display:flex; gap:6px; }
+  .ds-dj-action {
+    padding:5px 12px; border-radius:var(--radius-full);
+    border:1px solid var(--border-medium); background:transparent;
+    color:var(--text-secondary); font-size:11px; font-weight:600;
+    cursor:pointer; transition:all var(--t-fast);
+  }
+  .ds-dj-action:hover { border-color:var(--pink); color:var(--pink-light); background:rgba(255,45,120,.06); }
+
+  /* Chat */
+  .ds-chat {
+    width:320px; background:var(--bg-secondary); border-left:1px solid var(--border-subtle);
+    display:flex; flex-direction:column; flex-shrink:0;
+  }
+  .ds-chat-header {
+    padding:16px 20px; border-bottom:1px solid var(--border-subtle);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .ds-chat-title { font-size:14px; font-weight:700; }
+  .ds-chat-badge { padding:2px 8px; border-radius:var(--radius-full); background:rgba(255,45,120,.12); font-size:10px; font-weight:600; color:var(--pink-light); margin-left:8px; }
+
+  .ds-chat-msgs {
+    flex:1; overflow-y:auto; padding:12px 16px; display:flex; flex-direction:column; gap:10px;
+  }
+  .ds-msg { display:flex; gap:10px; align-items:flex-start; }
+  .ds-msg-av { width:30px; height:30px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .ds-msg-body { min-width:0; }
+  .ds-msg-name { font-size:12px; font-weight:600; color:var(--pink-light); }
+  .ds-msg-time { font-size:10px; color:var(--text-muted); margin-left:6px; }
+  .ds-msg-text { font-size:13px; color:var(--text-secondary); line-height:1.4; margin-top:2px; }
+
+  .ds-chat-input {
+    padding:12px 16px; border-top:1px solid var(--border-subtle);
+  }
+  .ds-chat-input-wrap {
+    display:flex; align-items:center; gap:8px; padding:8px 14px;
+    border-radius:var(--radius-full); background:var(--bg-elevated);
+    border:1px solid var(--border-subtle);
+  }
+  .ds-chat-inp { flex:1; background:none; border:none; outline:none; color:var(--text-primary); font-size:13px; font-family:inherit; }
+  .ds-chat-inp::placeholder { color:var(--text-muted); }
+  .ds-chat-send {
+    width:30px; height:30px; border-radius:50%; border:none;
+    background:var(--pink); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    opacity:.4; transition:all var(--t-fast);
+  }
+  .ds-chat-send:hover { opacity:1; }
+  .ds-chat-send svg { width:14px; height:14px; fill:white; }
+
+  /* Bottom bar */
+  .ds-bottom {
+    height:72px; background:var(--bg-card); border-top:1px solid var(--border-subtle);
+    display:flex; align-items:center; padding:0 20px; gap:16px; flex-shrink:0;
+  }
+  .ds-bottom-song { display:flex; align-items:center; gap:12px; width:240px; flex-shrink:0; }
+  .ds-bottom-art { width:44px; height:44px; border-radius:var(--radius-sm); object-fit:cover; }
+  .ds-bottom-title { font-size:13px; font-weight:600; }
+  .ds-bottom-meta { font-size:11px; color:var(--text-tertiary); margin-top:1px; }
+  .ds-bottom-center { flex:1; display:flex; align-items:center; justify-content:center; gap:12px; }
+  .ds-bottom-progress { flex:1; max-width:480px; height:3px; border-radius:2px; background:rgba(255,255,255,.1); }
+  .ds-bottom-progress-fill { height:100%; width:35%; border-radius:2px; background:var(--pink); }
+  .ds-bottom-play {
+    width:36px; height:36px; border-radius:50%; border:none; background:white;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .ds-bottom-play svg { fill:var(--bg-primary); }
+  .ds-bottom-right { width:240px; display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+  .ds-listener-count { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--text-tertiary); }
+  .ds-listener-count::before { content:''; width:6px; height:6px; border-radius:50%; background:#22c55e; }
+
+  /* ══════════════════════════════════════════════════
+     VIEW 3: MOBILE LANDING
+     ══════════════════════════════════════════════════ */
+  .mobile-frame {
+    width:390px; height:844px; margin:60px auto 40px;
+    border-radius:40px; overflow:hidden;
+    border:3px solid #333; background:var(--bg-primary);
+    box-shadow:0 20px 80px rgba(0,0,0,.6);
+    display:flex; flex-direction:column;
+    position:relative;
+  }
+  .mobile-notch {
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:150px; height:34px; background:#000; border-radius:0 0 20px 20px; z-index:10;
+  }
+
+  .mobile-scroll { flex:1; overflow-y:auto; padding-bottom:70px; }
+  .mobile-scroll::-webkit-scrollbar { display:none; }
+
+  .ml-hero { text-align:center; padding:52px 20px 32px; }
+  .ml-hero h1 {
+    font-size:32px; font-weight:900; letter-spacing:3px; text-transform:uppercase;
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .ml-hero p { font-size:14px; color:var(--text-secondary); margin-top:6px; }
+
+  .ml-stats { display:flex; justify-content:center; gap:28px; margin-top:20px; }
+  .ml-stat-val { font-size:20px; font-weight:800; color:var(--pink); }
+  .ml-stat-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-top:2px; }
+
+  .ml-section { padding:0 16px; margin-top:28px; }
+  .ml-section-title { font-size:16px; font-weight:700; margin-bottom:12px; }
+
+  .ml-stations { display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; }
+  .ml-stations::-webkit-scrollbar { display:none; }
+
+  .ml-station-card {
+    width:150px; flex-shrink:0; border-radius:var(--radius-lg); overflow:hidden;
+    cursor:pointer; transition:transform var(--t-fast);
+  }
+  .ml-station-card:hover { transform:scale(1.03); }
+  .ml-station-img { width:100%; height:150px; object-fit:cover; display:block; }
+  .ml-station-card-info {
+    padding:10px; background:var(--bg-card);
+    border:1px solid var(--border-subtle); border-top:none;
+    border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  }
+  .ml-station-card-name { font-size:13px; font-weight:700; }
+  .ml-station-card-genre { font-size:10px; color:var(--text-tertiary); margin-top:2px; }
+  .ml-station-card-dj { font-size:10px; color:var(--text-muted); margin-top:2px; }
+
+  /* Mobile DJs */
+  .ml-djs { display:flex; gap:16px; overflow-x:auto; }
+  .ml-djs::-webkit-scrollbar { display:none; }
+  .ml-dj { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; }
+  .ml-dj-av { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,45,120,.3); }
+  .ml-dj-name { font-size:11px; color:var(--text-secondary); max-width:56px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* Mobile songs */
+  .ml-songs { display:flex; flex-direction:column; gap:8px; }
+  .ml-song {
+    display:flex; align-items:center; gap:12px; padding:10px 14px;
+    border-radius:var(--radius-md); background:var(--bg-card); border:1px solid var(--border-subtle);
+  }
+  .ml-song-rank { width:20px; text-align:center; font-size:13px; font-weight:700; color:var(--pink); flex-shrink:0; }
+  .ml-song-art { width:36px; height:36px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+  .ml-song-title { font-size:13px; font-weight:600; }
+  .ml-song-artist { font-size:11px; color:var(--text-tertiary); }
+
+  /* Mobile CTA */
+  .ml-cta { padding:32px 16px; text-align:center; }
+  .ml-cta-btn {
+    display:inline-block; padding:12px 28px; border-radius:var(--radius-full);
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    color:white; font-size:13px; font-weight:700; text-decoration:none;
+  }
+
+  /* Mobile bottom tab bar */
+  .mobile-tabs {
+    position:absolute; bottom:0; left:0; right:0; height:70px;
+    background:var(--bg-card); border-top:1px solid var(--border-subtle);
+    display:flex; align-items:center; justify-content:space-around;
+    padding-bottom:10px; backdrop-filter:blur(20px);
+  }
+  .mobile-tab {
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    color:var(--text-muted); text-decoration:none; font-size:10px; font-weight:600;
+    transition:color var(--t-fast);
+  }
+  .mobile-tab.active { color:var(--pink-light); }
+  .mobile-tab svg { width:22px; height:22px; }
+
+  /* ══════════════════════════════════════════════════
+     VIEW 4: MOBILE STATION
+     ══════════════════════════════════════════════════ */
+  .ms-scroll { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+  .ms-scroll::-webkit-scrollbar { display:none; }
+
+  .ms-hero {
+    position:relative; min-height:320px; overflow:hidden;
+  }
+  .ms-hero-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.5) saturate(1.2); }
+  .ms-hero-grad { position:absolute; inset:0; background:linear-gradient(0deg, var(--bg-primary) 0%, rgba(15,15,26,.5) 50%, transparent); }
+  .ms-hero-content { position:relative; z-index:1; padding:52px 20px 20px; display:flex; flex-direction:column; justify-content:flex-end; height:100%; }
+  .ms-hero-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:auto; }
+  .ms-back {
+    width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.4);
+    backdrop-filter:blur(8px); border:none; color:white; font-size:16px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .ms-genre-badge {
+    padding:3px 12px; border-radius:var(--radius-full); background:rgba(255,255,255,.12);
+    backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1);
+    font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,.85);
+  }
+  .ms-live-ind {
+    display:flex; align-items:center; gap:5px; padding:3px 10px;
+    border-radius:var(--radius-full); background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3);
+  }
+  .ms-live-dot { width:5px; height:5px; border-radius:50%; background:#22c55e; animation:pulse-dot 2s ease-in-out infinite; }
+  .ms-live-text { font-size:9px; font-weight:700; text-transform:uppercase; color:#4ade80; }
+
+  .ms-station-name { font-size:28px; font-weight:900; margin-bottom:10px; }
+
+  .ms-song-card {
+    display:flex; align-items:center; gap:12px; padding:10px 14px;
+    border-radius:var(--radius-md); background:rgba(0,0,0,.4);
+    backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.08);
+  }
+  .ms-song-art { width:44px; height:44px; border-radius:var(--radius-sm); object-fit:cover; flex-shrink:0; }
+  .ms-song-title { font-size:13px; font-weight:600; }
+  .ms-song-artist { font-size:11px; color:var(--text-secondary); margin-top:1px; }
+
+  .ms-body { padding:16px; display:flex; flex-direction:column; gap:12px; flex:1; }
+
+  /* Mobile reactions — horizontal */
+  .ms-reactions {
+    display:flex; justify-content:center; gap:6px; padding:8px 0;
+  }
+  .ms-react-btn {
+    width:44px; height:44px; border-radius:50%; border:2px solid transparent;
+    background:var(--bg-card); cursor:pointer; font-size:20px;
+    display:flex; align-items:center; justify-content:center; transition:all var(--t-fast);
+  }
+  .ms-react-btn.active { background:rgba(255,45,120,.12); border-color:rgba(255,45,120,.4); box-shadow:0 0 14px rgba(255,45,120,.25); }
+
+  .ms-controls {
+    display:flex; align-items:center; gap:10px; padding:12px 16px;
+    border-radius:var(--radius-lg); background:var(--bg-card);
+    border:1px solid var(--border-subtle);
+  }
+  .ms-vol-btn { background:none; border:none; font-size:14px; opacity:.5; }
+  .ms-vol-track { flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,.1); }
+  .ms-vol-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--pink),var(--pink-light)); width:72%; }
+  .ms-play-btn {
+    width:44px; height:44px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,var(--pink),var(--pink-light));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 16px rgba(255,45,120,.35); flex-shrink:0; cursor:pointer;
+  }
+  .ms-play-btn svg { fill:white; }
+
+  /* Mobile DJ */
+  .ms-dj {
+    display:flex; align-items:center; gap:12px; padding:12px 16px;
+    border-radius:var(--radius-lg); background:var(--bg-card);
+    border:1px solid var(--border-subtle);
+  }
+  .ms-dj-av { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,45,120,.3); flex-shrink:0; }
+  .ms-dj-name { font-size:14px; font-weight:600; }
+  .ms-dj-listeners { font-size:11px; color:var(--text-tertiary); margin-top:1px; }
+
+  /* Mobile chat (bottom sheet style) */
+  .ms-chat-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; background:var(--bg-card); border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+    border:1px solid var(--border-subtle); border-bottom:none; margin-top:4px;
+  }
+  .ms-chat-title { font-size:13px; font-weight:700; }
+  .ms-chat-badge { padding:2px 8px; border-radius:var(--radius-full); background:rgba(255,45,120,.12); font-size:10px; font-weight:600; color:var(--pink-light); margin-left:6px; }
+  .ms-chat-toggle { font-size:12px; color:var(--text-muted); background:none; border:none; cursor:pointer; }
+
+  .ms-chat-body {
+    background:var(--bg-card); border:1px solid var(--border-subtle); border-top:none;
+    border-radius:0 0 var(--radius-lg) var(--radius-lg);
+    padding:10px 14px; display:flex; flex-direction:column; gap:8px;
+    max-height:180px; overflow-y:auto;
+  }
+  .ms-chat-msg { display:flex; gap:8px; }
+  .ms-chat-msg-av { width:24px; height:24px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .ms-chat-msg-name { font-size:11px; font-weight:600; color:var(--pink-light); }
+  .ms-chat-msg-text { font-size:12px; color:var(--text-secondary); line-height:1.3; }
+
+  .ms-chat-input-wrap {
+    display:flex; align-items:center; gap:8px; padding:8px 12px;
+    border-radius:var(--radius-full); background:var(--bg-elevated);
+    border:1px solid var(--border-subtle); margin-top:8px;
+  }
+  .ms-chat-inp { flex:1; background:none; border:none; outline:none; color:var(--text-primary); font-size:12px; font-family:inherit; }
+  .ms-chat-inp::placeholder { color:var(--text-muted); }
+
+  /* Mobile mini player above tabs */
+  .mobile-mini-player {
+    position:absolute; bottom:70px; left:8px; right:8px;
+    height:56px; background:var(--bg-elevated);
+    border-radius:var(--radius-md); border:1px solid var(--border-subtle);
+    display:flex; align-items:center; padding:0 12px; gap:10px;
+    box-shadow:0 -4px 20px rgba(0,0,0,.3);
+  }
+  .mmp-art { width:36px; height:36px; border-radius:6px; object-fit:cover; flex-shrink:0; }
+  .mmp-info { flex:1; min-width:0; }
+  .mmp-title { font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mmp-artist { font-size:10px; color:var(--text-tertiary); }
+  .mmp-play {
+    width:32px; height:32px; border-radius:50%; border:none;
+    background:var(--pink); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+  }
+  .mmp-play svg { fill:white; width:12px; height:12px; }
+  .mmp-progress { position:absolute; bottom:0; left:12px; right:12px; height:2px; border-radius:1px; background:rgba(255,255,255,.1); }
+  .mmp-progress-fill { height:100%; width:35%; border-radius:1px; background:var(--pink); }
+</style>
+</head>
+<body>
+
+<!-- View Switcher -->
+<div class="view-tabs">
+  <button class="view-tab active" onclick="showView('dl')">Desktop Landing</button>
+  <button class="view-tab" onclick="showView('ds')">Desktop Station</button>
+  <button class="view-tab" onclick="showView('ml')">Mobile Landing</button>
+  <button class="view-tab" onclick="showView('ms')">Mobile Station</button>
+  <button class="view-tab" onclick="showView('rl')">Responsive Landing</button>
+  <button class="view-tab" onclick="showView('rs')">Responsive Station</button>
+</div>
+
+<!-- ════════════════ DESKTOP LANDING ════════════════ -->
+<div class="view active" id="view-dl">
+<div class="desktop-landing">
+  <div class="dl-hero">
+    <div class="dl-hero-icon">
+      <svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="#ff2d78" opacity=".15"/><circle cx="32" cy="32" r="18" fill="#ff2d78" opacity=".3"/><circle cx="32" cy="32" r="9" fill="#ff2d78"/><line x1="32" y1="4" x2="50" y2="14" stroke="#ff6b9d" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </div>
+    <h1>OwnRadio</h1>
+    <p>Your station, your vibe. Listen live.</p>
+    <div class="dl-stats">
+      <div style="text-align:center"><div class="dl-stat-val">4</div><div class="dl-stat-label">Stations</div></div>
+      <div class="dl-stat-divider"></div>
+      <div style="text-align:center"><div class="dl-stat-val">312</div><div class="dl-stat-label">Listeners</div></div>
+      <div class="dl-stat-divider"></div>
+      <div style="text-align:center"><div class="dl-stat-val">4</div><div class="dl-stat-label">DJs</div></div>
+    </div>
+  </div>
+
+  <div class="dl-section">
+    <div class="dl-section-header"><span class="dl-section-title">Featured Stations</span><a class="dl-section-link" href="#">See all →</a></div>
+    <div class="dl-stations">
+      <div class="dl-station-card" onclick="showView('ds')">
+        <img class="dl-station-img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop" alt="OwnRadio">
+        <div class="dl-station-overlay">
+          <div class="dl-station-badge live">● LIVE</div>
+          <div class="dl-station-info">
+            <div class="dl-station-name">OwnRadio</div>
+            <div class="dl-station-genre">Pop</div>
+            <div class="dl-station-meta">
+              <span class="dl-station-dj">DJ Mike</span>
+              <span class="dl-station-listeners">89</span>
+            </div>
+            <div class="dl-station-song">♪ Anti-Hero — Taylor Swift</div>
+          </div>
+        </div>
+      </div>
+      <div class="dl-station-card">
+        <img class="dl-station-img" src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=400&h=400&fit=crop" alt="Rock Haven">
+        <div class="dl-station-overlay">
+          <div class="dl-station-badge soon">COMING SOON</div>
+          <div class="dl-station-info">
+            <div class="dl-station-name">Rock Haven</div>
+            <div class="dl-station-genre">Rock</div>
+            <div class="dl-station-meta"><span class="dl-station-dj">DJ Axel</span></div>
+            <div class="dl-station-song">♪ Bohemian Rhapsody — Queen</div>
+          </div>
+        </div>
+      </div>
+      <div class="dl-station-card">
+        <img class="dl-station-img" src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=400&h=400&fit=crop" alt="Beat Street">
+        <div class="dl-station-overlay">
+          <div class="dl-station-badge soon">COMING SOON</div>
+          <div class="dl-station-info">
+            <div class="dl-station-name">Beat Street</div>
+            <div class="dl-station-genre">Hip-Hop / R&B</div>
+            <div class="dl-station-meta"><span class="dl-station-dj">MC Flow</span></div>
+            <div class="dl-station-song">♪ Lose Yourself — Eminem</div>
+          </div>
+        </div>
+      </div>
+      <div class="dl-station-card">
+        <img class="dl-station-img" src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=400&h=400&fit=crop" alt="Chill Waves">
+        <div class="dl-station-overlay">
+          <div class="dl-station-badge soon">COMING SOON</div>
+          <div class="dl-station-info">
+            <div class="dl-station-name">Chill Waves</div>
+            <div class="dl-station-genre">Lo-Fi / Ambient</div>
+            <div class="dl-station-meta"><span class="dl-station-dj">DJ Luna</span></div>
+            <div class="dl-station-song">♪ Snowman — WYS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dl-section">
+    <div class="dl-section-header"><span class="dl-section-title">Top DJs</span></div>
+    <div class="dl-djs">
+      <div class="dl-dj"><div class="dl-dj-avatar-wrap"><img class="dl-dj-avatar online" src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=150&h=150&fit=crop&crop=face" alt="DJ Mike"><div class="dl-dj-dot"></div></div><div class="dl-dj-name">DJ Mike</div></div>
+      <div class="dl-dj"><div class="dl-dj-avatar-wrap"><img class="dl-dj-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" alt="DJ Axel"></div><div class="dl-dj-name">DJ Axel</div></div>
+      <div class="dl-dj"><div class="dl-dj-avatar-wrap"><img class="dl-dj-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face" alt="MC Flow"></div><div class="dl-dj-name">MC Flow</div></div>
+      <div class="dl-dj"><div class="dl-dj-avatar-wrap"><img class="dl-dj-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" alt="DJ Luna"></div><div class="dl-dj-name">DJ Luna</div></div>
+    </div>
+  </div>
+
+  <div class="dl-section">
+    <div class="dl-section-header"><span class="dl-section-title">Trending Songs</span></div>
+    <div class="dl-songs">
+      <div class="dl-song"><span class="dl-song-rank">1</span><img class="dl-song-art" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=80&h=80&fit=crop" alt=""><div class="dl-song-info"><div class="dl-song-title">Anti-Hero</div><div class="dl-song-artist">Taylor Swift · OwnRadio</div></div></div>
+      <div class="dl-song"><span class="dl-song-rank">2</span><img class="dl-song-art" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=80&h=80&fit=crop" alt=""><div class="dl-song-info"><div class="dl-song-title">Bohemian Rhapsody</div><div class="dl-song-artist">Queen · Rock Haven</div></div></div>
+      <div class="dl-song"><span class="dl-song-rank">3</span><img class="dl-song-art" src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=80&h=80&fit=crop" alt=""><div class="dl-song-info"><div class="dl-song-title">Lose Yourself</div><div class="dl-song-artist">Eminem · Beat Street</div></div></div>
+      <div class="dl-song"><span class="dl-song-rank">4</span><img class="dl-song-art" src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=80&h=80&fit=crop" alt=""><div class="dl-song-info"><div class="dl-song-title">Snowman</div><div class="dl-song-artist">WYS · Chill Waves</div></div></div>
+    </div>
+  </div>
+
+  <div class="dl-cta">
+    <h2>Join the crowd</h2>
+    <p>Listen live. React. Chat. No setup needed.</p>
+    <a class="dl-cta-btn" href="#">Start Listening</a>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ DESKTOP STATION ════════════════ -->
+<div class="view" id="view-ds">
+<div class="desktop-station">
+  <aside class="ds-sidebar">
+    <div class="ds-sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="#ff2d78" opacity=".15"/><circle cx="32" cy="32" r="18" fill="#ff2d78" opacity=".3"/><circle cx="32" cy="32" r="9" fill="#ff2d78"/><line x1="32" y1="4" x2="50" y2="14" stroke="#ff6b9d" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span>OwnRadio</span>
+    </div>
+    <nav class="ds-nav">
+      <a href="#" onclick="showView('dl');return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>Home</a>
+      <a href="#" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9.172 14.828a4 4 0 010-5.656m5.656 0a4 4 0 010 5.656M12 12h.01"/></svg>Stations</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Browse</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Library</a>
+    </nav>
+    <div class="ds-divider"></div>
+    <div class="ds-label">Your Stations</div>
+    <div class="ds-station-item active">
+      <img class="ds-station-thumb" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=64&h=64&fit=crop" alt="">
+      <span class="ds-station-item-name">OwnRadio</span>
+    </div>
+    <div class="ds-station-item">
+      <img class="ds-station-thumb" src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=64&h=64&fit=crop" alt="">
+      <span class="ds-station-item-name">Rock Haven</span>
+    </div>
+    <div class="ds-station-item">
+      <img class="ds-station-thumb" src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=64&h=64&fit=crop" alt="">
+      <span class="ds-station-item-name">Beat Street</span>
+    </div>
+  </aside>
+
+  <div class="ds-main">
+    <div class="ds-topbar">
+      <button class="ds-icon-btn on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="ds-dots"><div class="ds-dot active"></div><div class="ds-dot"></div><div class="ds-dot"></div><div class="ds-dot"></div></div>
+      <button class="ds-icon-btn on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></button>
+    </div>
+
+    <div class="ds-content-row">
+      <div class="ds-station-detail">
+        <div class="ds-hero-wrap">
+          <div class="ds-hero">
+            <img class="ds-hero-bg" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&h=500&fit=crop" alt="">
+            <div class="ds-hero-gradient"></div>
+            <div class="ds-hero-content">
+              <div class="ds-hero-top">
+                <span class="ds-genre-badge">Pop</span>
+                <div class="ds-live-ind"><div class="ds-live-dot"></div><span class="ds-live-text">Live</span></div>
+              </div>
+              <div class="ds-hero-bottom">
+                <h1 class="ds-station-name">OwnRadio</h1>
+                <div class="ds-song-card">
+                  <img class="ds-song-art" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=96&h=96&fit=crop" alt="">
+                  <div class="ds-song-info"><div class="ds-song-title">Anti-Hero</div><div class="ds-song-artist">Taylor Swift</div></div>
+                  <div class="ds-bars"><span></span><span></span><span></span><span></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ds-reactions">
+            <button class="ds-react-btn active">🤘</button>
+            <button class="ds-react-btn">❤️</button>
+            <button class="ds-react-btn">🎵</button>
+            <button class="ds-react-btn">😴</button>
+            <button class="ds-react-btn">👎</button>
+          </div>
+        </div>
+
+        <div class="ds-controls">
+          <button class="ds-vol-btn">🔈</button>
+          <div class="ds-vol-track"><div class="ds-vol-fill"></div></div>
+          <button class="ds-vol-btn">🔊</button>
+          <button class="ds-play-btn"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></button>
+        </div>
+
+        <div class="ds-dj-card">
+          <div class="ds-dj-avatar-wrap">
+            <img class="ds-dj-avatar" src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=88&h=88&fit=crop&crop=face" alt="">
+            <div class="ds-dj-online"></div>
+          </div>
+          <div><div class="ds-dj-name">DJ Mike</div><div class="ds-dj-listeners">89 listening</div></div>
+          <div class="ds-dj-actions"><button class="ds-dj-action">Playlist</button><button class="ds-dj-action">Top 10</button></div>
+        </div>
+      </div>
+
+      <div class="ds-chat">
+        <div class="ds-chat-header"><div style="display:flex;align-items:center"><span class="ds-chat-title">Live Chat</span><span class="ds-chat-badge">89</span></div></div>
+        <div class="ds-chat-msgs">
+          <div class="ds-msg"><img class="ds-msg-av" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=60&h=60&fit=crop&crop=face" alt=""><div class="ds-msg-body"><div><span class="ds-msg-name">alex</span><span class="ds-msg-time">12:34</span></div><div class="ds-msg-text">this song hits different at night</div></div></div>
+          <div class="ds-msg"><img class="ds-msg-av" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60&fit=crop&crop=face" alt=""><div class="ds-msg-body"><div><span class="ds-msg-name">maya</span><span class="ds-msg-time">12:35</span></div><div class="ds-msg-text">DJ Mike always picks the best tracks 🔥</div></div></div>
+          <div class="ds-msg"><img class="ds-msg-av" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" alt=""><div class="ds-msg-body"><div><span class="ds-msg-name">jake_99</span><span class="ds-msg-time">12:35</span></div><div class="ds-msg-text">first time here, the vibe is immaculate</div></div></div>
+          <div class="ds-msg"><img class="ds-msg-av" src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=60&h=60&fit=crop&crop=face" alt=""><div class="ds-msg-body"><div><span class="ds-msg-name" style="color:#22c55e">DJ Mike</span><span class="ds-msg-time">12:36</span></div><div class="ds-msg-text">coming up after this one! 🎧</div></div></div>
+        </div>
+        <div class="ds-chat-input"><div class="ds-chat-input-wrap"><input class="ds-chat-inp" placeholder="Say something..."><button class="ds-chat-send"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div></div>
+      </div>
+    </div>
+
+    <div class="ds-bottom">
+      <div class="ds-bottom-song"><img class="ds-bottom-art" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=88&h=88&fit=crop" alt=""><div><div class="ds-bottom-title">Anti-Hero</div><div class="ds-bottom-meta">Taylor Swift · OwnRadio</div></div></div>
+      <div class="ds-bottom-center"><div class="ds-bottom-progress"><div class="ds-bottom-progress-fill"></div></div><button class="ds-bottom-play"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></button></div>
+      <div class="ds-bottom-right"><div class="ds-listener-count">89 listening</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ MOBILE LANDING ════════════════ -->
+<div class="view" id="view-ml">
+<div class="mobile-frame">
+  <div class="mobile-notch"></div>
+  <div class="mobile-scroll">
+    <div class="ml-hero">
+      <svg width="40" height="40" viewBox="0 0 64 64" style="margin-bottom:12px"><circle cx="32" cy="32" r="28" fill="#ff2d78" opacity=".15"/><circle cx="32" cy="32" r="18" fill="#ff2d78" opacity=".3"/><circle cx="32" cy="32" r="9" fill="#ff2d78"/></svg>
+      <h1>OwnRadio</h1>
+      <p>Your station, your vibe.</p>
+      <div class="ml-stats">
+        <div style="text-align:center"><div class="ml-stat-val">4</div><div class="ml-stat-label">Stations</div></div>
+        <div style="text-align:center"><div class="ml-stat-val">312</div><div class="ml-stat-label">Listeners</div></div>
+        <div style="text-align:center"><div class="ml-stat-val">4</div><div class="ml-stat-label">DJs</div></div>
+      </div>
+    </div>
+
+    <div class="ml-section">
+      <div class="ml-section-title">Featured Stations</div>
+      <div class="ml-stations">
+        <div class="ml-station-card" onclick="showView('ms')">
+          <img class="ml-station-img" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop" alt="">
+          <div class="ml-station-card-info"><div class="ml-station-card-name">OwnRadio</div><div class="ml-station-card-genre">Pop · ● LIVE</div><div class="ml-station-card-dj">DJ Mike</div></div>
+        </div>
+        <div class="ml-station-card">
+          <img class="ml-station-img" src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=300&h=300&fit=crop" alt="">
+          <div class="ml-station-card-info"><div class="ml-station-card-name">Rock Haven</div><div class="ml-station-card-genre">Rock</div><div class="ml-station-card-dj">DJ Axel</div></div>
+        </div>
+        <div class="ml-station-card">
+          <img class="ml-station-img" src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=300&h=300&fit=crop" alt="">
+          <div class="ml-station-card-info"><div class="ml-station-card-name">Beat Street</div><div class="ml-station-card-genre">Hip-Hop / R&B</div><div class="ml-station-card-dj">MC Flow</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ml-section">
+      <div class="ml-section-title">Top DJs</div>
+      <div class="ml-djs">
+        <div class="ml-dj"><img class="ml-dj-av" src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=112&h=112&fit=crop&crop=face" alt=""><div class="ml-dj-name">DJ Mike</div></div>
+        <div class="ml-dj"><img class="ml-dj-av" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=112&h=112&fit=crop&crop=face" alt=""><div class="ml-dj-name">DJ Axel</div></div>
+        <div class="ml-dj"><img class="ml-dj-av" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=112&h=112&fit=crop&crop=face" alt=""><div class="ml-dj-name">MC Flow</div></div>
+        <div class="ml-dj"><img class="ml-dj-av" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=112&h=112&fit=crop&crop=face" alt=""><div class="ml-dj-name">DJ Luna</div></div>
+      </div>
+    </div>
+
+    <div class="ml-section">
+      <div class="ml-section-title">Trending Songs</div>
+      <div class="ml-songs">
+        <div class="ml-song"><span class="ml-song-rank">1</span><img class="ml-song-art" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=72&h=72&fit=crop" alt=""><div><div class="ml-song-title">Anti-Hero</div><div class="ml-song-artist">Taylor Swift</div></div></div>
+        <div class="ml-song"><span class="ml-song-rank">2</span><img class="ml-song-art" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=72&h=72&fit=crop" alt=""><div><div class="ml-song-title">Bohemian Rhapsody</div><div class="ml-song-artist">Queen</div></div></div>
+        <div class="ml-song"><span class="ml-song-rank">3</span><img class="ml-song-art" src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=72&h=72&fit=crop" alt=""><div><div class="ml-song-title">Lose Yourself</div><div class="ml-song-artist">Eminem</div></div></div>
+      </div>
+    </div>
+
+    <div class="ml-cta"><a class="ml-cta-btn" href="#">Start Listening</a></div>
+  </div>
+
+  <div class="mobile-tabs">
+    <a class="mobile-tab active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>Home</a>
+    <a class="mobile-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9.172 14.828a4 4 0 010-5.656m5.656 0a4 4 0 010 5.656M12 12h.01"/></svg>Stations</a>
+    <a class="mobile-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Browse</a>
+    <a class="mobile-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Profile</a>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ MOBILE STATION ════════════════ -->
+<div class="view" id="view-ms">
+<div class="mobile-frame">
+  <div class="mobile-notch"></div>
+  <div class="ms-scroll" style="padding-bottom:140px">
+    <div class="ms-hero">
+      <img class="ms-hero-bg" src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop" alt="">
+      <div class="ms-hero-grad"></div>
+      <div class="ms-hero-content">
+        <div class="ms-hero-top">
+          <button class="ms-back" onclick="showView('ml')">‹</button>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span class="ms-genre-badge">Pop</span>
+            <div class="ms-live-ind"><div class="ms-live-dot"></div><span class="ms-live-text">Live</span></div>
+          </div>
+        </div>
+        <div>
+          <h1 class="ms-station-name">OwnRadio</h1>
+          <div class="ms-song-card">
+            <img class="ms-song-art" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=88&h=88&fit=crop" alt="">
+            <div><div class="ms-song-title">Anti-Hero</div><div class="ms-song-artist">Taylor Swift</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ms-body">
+      <div class="ms-reactions">
+        <button class="ms-react-btn active">🤘</button>
+        <button class="ms-react-btn">❤️</button>
+        <button class="ms-react-btn">🎵</button>
+        <button class="ms-react-btn">😴</button>
+        <button class="ms-react-btn">👎</button>
+      </div>
+
+      <div class="ms-controls">
+        <button class="ms-vol-btn">🔈</button>
+        <div class="ms-vol-track"><div class="ms-vol-fill"></div></div>
+        <button class="ms-vol-btn">🔊</button>
+        <button class="ms-play-btn"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21" fill="white"/></svg></button>
+      </div>
+
+      <div class="ms-dj">
+        <img class="ms-dj-av" src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=80&h=80&fit=crop&crop=face" alt="">
+        <div><div class="ms-dj-name">DJ Mike</div><div class="ms-dj-listeners">89 listening</div></div>
+      </div>
+
+      <div class="ms-chat-header">
+        <div style="display:flex;align-items:center"><span class="ms-chat-title">Live Chat</span><span class="ms-chat-badge">89</span></div>
+        <button class="ms-chat-toggle">▾</button>
+      </div>
+      <div class="ms-chat-body">
+        <div class="ms-chat-msg"><img class="ms-chat-msg-av" src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=48&h=48&fit=crop&crop=face" alt=""><div><div class="ms-chat-msg-name">alex</div><div class="ms-chat-msg-text">this song hits different at night</div></div></div>
+        <div class="ms-chat-msg"><img class="ms-chat-msg-av" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face" alt=""><div><div class="ms-chat-msg-name">maya</div><div class="ms-chat-msg-text">DJ Mike always picks the best 🔥</div></div></div>
+        <div class="ms-chat-msg"><img class="ms-chat-msg-av" src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=48&h=48&fit=crop&crop=face" alt=""><div><div class="ms-chat-msg-name" style="color:#22c55e">DJ Mike</div><div class="ms-chat-msg-text">coming up after this one! 🎧</div></div></div>
+        <div class="ms-chat-input-wrap"><input class="ms-chat-inp" placeholder="Say something..."></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-mini-player">
+    <img class="mmp-art" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=72&h=72&fit=crop" alt="">
+    <div class="mmp-info"><div class="mmp-title">Anti-Hero</div><div class="mmp-artist">Taylor Swift · OwnRadio</div></div>
+    <button class="mmp-play"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></button>
+    <div class="mmp-progress"><div class="mmp-progress-fill"></div></div>
+  </div>
+
+  <div class="mobile-tabs">
+    <a class="mobile-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>Home</a>
+    <a class="mobile-tab active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728M9.172 14.828a4 4 0 010-5.656m5.656 0a4 4 0 010 5.656M12 12h.01"/></svg>Stations</a>
+    <a class="mobile-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Browse</a>
+    <a class="mobile-tab" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Profile</a>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ RESPONSIVE LANDING (desktop on mobile browser) ════════════════ -->
+<div class="view" id="view-rl">
+<div class="mobile-frame">
+  <div class="mobile-notch"></div>
+  <div class="mobile-scroll" style="padding-bottom:10px">
+    <!-- Same hero but adapted -->
+    <div style="text-align:center;padding:52px 16px 28px;background:radial-gradient(ellipse at 50% 0%,rgba(255,45,120,.06),transparent 70%)">
+      <svg width="36" height="36" viewBox="0 0 64 64" style="margin-bottom:10px"><circle cx="32" cy="32" r="28" fill="#ff2d78" opacity=".15"/><circle cx="32" cy="32" r="18" fill="#ff2d78" opacity=".3"/><circle cx="32" cy="32" r="9" fill="#ff2d78"/></svg>
+      <h1 style="font-size:28px;font-weight:900;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,var(--pink),var(--pink-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent">OwnRadio</h1>
+      <p style="font-size:13px;color:var(--text-secondary);margin-top:4px">Your station, your vibe. Listen live.</p>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:16px">
+        <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--pink)">4</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:2px">Stations</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--pink)">312</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:2px">Listeners</div></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--pink)">4</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:2px">DJs</div></div>
+      </div>
+    </div>
+
+    <!-- Hamburger hint -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-bottom:4px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </div>
+        <span style="font-size:11px;color:var(--text-muted)">Menu</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--text-muted)">Search</span>
+        <div style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stations — 2-column grid (responsive from 4-col desktop) -->
+    <div style="padding:12px 16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">Featured Stations</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="border-radius:14px;overflow:hidden;cursor:pointer" onclick="showView('rs')">
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" alt="">
+          <div style="position:relative;margin-top:-40px;padding:8px 10px;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);border-radius:0 0 14px 14px">
+            <div style="font-size:12px;font-weight:700">OwnRadio</div>
+            <div style="font-size:9px;color:var(--text-tertiary)">Pop · <span style="color:#4ade80">● LIVE</span></div>
+          </div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;opacity:.7">
+          <img src="https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=300&h=300&fit=crop" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" alt="">
+          <div style="position:relative;margin-top:-40px;padding:8px 10px;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);border-radius:0 0 14px 14px">
+            <div style="font-size:12px;font-weight:700">Rock Haven</div>
+            <div style="font-size:9px;color:var(--text-muted)">Rock · SOON</div>
+          </div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;opacity:.7">
+          <img src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=300&h=300&fit=crop" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" alt="">
+          <div style="position:relative;margin-top:-40px;padding:8px 10px;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);border-radius:0 0 14px 14px">
+            <div style="font-size:12px;font-weight:700">Beat Street</div>
+            <div style="font-size:9px;color:var(--text-muted)">Hip-Hop · SOON</div>
+          </div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;opacity:.7">
+          <img src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=300&h=300&fit=crop" style="width:100%;aspect-ratio:1;object-fit:cover;display:block" alt="">
+          <div style="position:relative;margin-top:-40px;padding:8px 10px;background:linear-gradient(0deg,rgba(0,0,0,.8),transparent);border-radius:0 0 14px 14px">
+            <div style="font-size:12px;font-weight:700">Chill Waves</div>
+            <div style="font-size:9px;color:var(--text-muted)">Lo-Fi · SOON</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DJs row -->
+    <div style="padding:12px 16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">Top DJs</div>
+      <div style="display:flex;gap:16px;overflow-x:auto">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0">
+          <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=100&h=100&fit=crop&crop=face" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,45,120,.3)" alt="">
+          <span style="font-size:10px;color:var(--text-secondary)">DJ Mike</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face" style="width:52px;height:52px;border-radius:50%;object-fit:cover" alt="">
+          <span style="font-size:10px;color:var(--text-secondary)">MC Flow</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0">
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face" style="width:52px;height:52px;border-radius:50%;object-fit:cover" alt="">
+          <span style="font-size:10px;color:var(--text-secondary)">DJ Luna</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trending — single column (collapsed from 2-col) -->
+    <div style="padding:12px 16px">
+      <div style="font-size:15px;font-weight:700;margin-bottom:10px">Trending Songs</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border-subtle)">
+          <span style="width:18px;text-align:center;font-size:13px;font-weight:700;color:var(--pink)">1</span>
+          <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=64&h=64&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover" alt="">
+          <div><div style="font-size:12px;font-weight:600">Anti-Hero</div><div style="font-size:10px;color:var(--text-tertiary)">Taylor Swift</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border-subtle)">
+          <span style="width:18px;text-align:center;font-size:13px;font-weight:700;color:var(--pink)">2</span>
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=64&h=64&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover" alt="">
+          <div><div style="font-size:12px;font-weight:600">Bohemian Rhapsody</div><div style="font-size:10px;color:var(--text-tertiary)">Queen</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border-subtle)">
+          <span style="width:18px;text-align:center;font-size:13px;font-weight:700;color:var(--pink)">3</span>
+          <img src="https://images.unsplash.com/photo-1571609803939-54f463ac2756?w=64&h=64&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover" alt="">
+          <div><div style="font-size:12px;font-weight:600">Lose Yourself</div><div style="font-size:10px;color:var(--text-tertiary)">Eminem</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;padding:28px 16px">
+      <div style="display:inline-block;padding:10px 24px;border-radius:999px;background:linear-gradient(135deg,var(--pink),var(--pink-light));color:white;font-size:13px;font-weight:700">Start Listening</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════ RESPONSIVE STATION (desktop station on mobile browser) ════════════════ -->
+<div class="view" id="view-rs">
+<div class="mobile-frame">
+  <div class="mobile-notch"></div>
+  <div class="mobile-scroll" style="padding-bottom:10px">
+    <!-- Top bar — sidebar hidden, just hamburger + dots + chat toggle -->
+    <div style="display:flex;align-items:center;padding:44px 12px 8px;gap:8px;background:var(--bg-secondary);border-bottom:1px solid var(--border-subtle)">
+      <div style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </div>
+      <div style="flex:1;display:flex;justify-content:center;gap:5px">
+        <div style="width:16px;height:5px;border-radius:3px;background:var(--pink)"></div>
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2)"></div>
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2)"></div>
+        <div style="width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2)"></div>
+      </div>
+      <div style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,45,120,.1);border-color:rgba(255,45,120,.3)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff6b9d" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      </div>
+    </div>
+
+    <!-- Hero with station image — full width, no sidebar -->
+    <div style="position:relative;min-height:240px;overflow:hidden">
+      <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=500&fit=crop" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.5) saturate(1.2)" alt="">
+      <div style="position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-primary) 0%,rgba(15,15,26,.4) 50%,transparent)"></div>
+      <div style="position:relative;z-index:1;padding:20px 16px;display:flex;flex-direction:column;justify-content:flex-end;height:240px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:auto">
+          <span style="padding:3px 12px;border-radius:999px;background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.85)">Pop</span>
+          <div style="display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3)">
+            <div style="width:5px;height:5px;border-radius:50%;background:#22c55e;animation:pulse-dot 2s ease-in-out infinite"></div>
+            <span style="font-size:9px;font-weight:700;text-transform:uppercase;color:#4ade80">Live</span>
+          </div>
+        </div>
+        <h1 style="font-size:26px;font-weight:900;margin-bottom:10px">OwnRadio</h1>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(0,0,0,.4);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08)">
+          <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=80&h=80&fit=crop" style="width:40px;height:40px;border-radius:6px;object-fit:cover" alt="">
+          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">Anti-Hero</div><div style="font-size:11px;color:var(--text-secondary)">Taylor Swift</div></div>
+          <div style="display:flex;align-items:flex-end;gap:2px;height:16px">
+            <span style="width:3px;border-radius:1px;background:var(--pink);height:35%;animation:bar 1.2s ease-in-out infinite"></span>
+            <span style="width:3px;border-radius:1px;background:var(--pink);height:80%;animation:bar 1.2s ease-in-out infinite;animation-delay:.15s"></span>
+            <span style="width:3px;border-radius:1px;background:var(--pink);height:55%;animation:bar 1.2s ease-in-out infinite;animation-delay:.3s"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reactions — horizontal row (adapted from vertical strip) -->
+    <div style="display:flex;justify-content:center;gap:8px;padding:14px 16px">
+      <button style="width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,45,120,.4);background:rgba(255,45,120,.12);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(255,45,120,.25)">🤘</button>
+      <button style="width:42px;height:42px;border-radius:50%;border:2px solid transparent;background:var(--bg-card);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">❤️</button>
+      <button style="width:42px;height:42px;border-radius:50%;border:2px solid transparent;background:var(--bg-card);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">🎵</button>
+      <button style="width:42px;height:42px;border-radius:50%;border:2px solid transparent;background:var(--bg-card);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">😴</button>
+      <button style="width:42px;height:42px;border-radius:50%;border:2px solid transparent;background:var(--bg-card);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">👎</button>
+    </div>
+
+    <!-- Audio controls -->
+    <div style="margin:0 16px;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:var(--bg-card);border:1px solid var(--border-subtle)">
+      <span style="font-size:14px;opacity:.5">🔈</span>
+      <div style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.1)"><div style="height:100%;width:72%;border-radius:2px;background:linear-gradient(90deg,var(--pink),var(--pink-light))"></div></div>
+      <span style="font-size:14px;opacity:.5">🔊</span>
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--pink-light));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,45,120,.35);cursor:pointer;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>
+      </div>
+    </div>
+
+    <!-- DJ card -->
+    <div style="margin:12px 16px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:var(--bg-card);border:1px solid var(--border-subtle)">
+      <div style="position:relative;flex-shrink:0">
+        <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=80&h=80&fit=crop&crop=face" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,45,120,.3)" alt="">
+        <div style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid var(--bg-card)"></div>
+      </div>
+      <div><div style="font-size:13px;font-weight:600">DJ Mike</div><div style="font-size:11px;color:var(--text-tertiary)">89 listening</div></div>
+      <div style="margin-left:auto;display:flex;gap:4px">
+        <span style="padding:4px 10px;border-radius:999px;border:1px solid var(--border-medium);font-size:10px;color:var(--text-secondary)">Playlist</span>
+        <span style="padding:4px 10px;border-radius:999px;border:1px solid var(--border-medium);font-size:10px;color:var(--text-secondary)">Top 10</span>
+      </div>
+    </div>
+
+    <!-- Chat as collapsible card -->
+    <div style="margin:4px 16px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-card);border-radius:14px 14px 0 0;border:1px solid var(--border-subtle);border-bottom:none">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:700">Live Chat</span><span style="padding:2px 6px;border-radius:999px;background:rgba(255,45,120,.12);font-size:9px;font-weight:600;color:var(--pink-light)">89</span></div>
+        <span style="font-size:11px;color:var(--text-muted);cursor:pointer">▾</span>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border-subtle);border-top:none;border-radius:0 0 14px 14px;padding:8px 12px;display:flex;flex-direction:column;gap:8px;max-height:160px;overflow-y:auto">
+        <div style="display:flex;gap:8px">
+          <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=48&h=48&fit=crop&crop=face" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
+          <div><div style="font-size:11px;font-weight:600;color:var(--pink-light)">alex</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.3">this song hits different at night</div></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=48&h=48&fit=crop&crop=face" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
+          <div><div style="font-size:11px;font-weight:600;color:var(--pink-light)">maya</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.3">DJ Mike always picks the best 🔥</div></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <img src="https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?w=48&h=48&fit=crop&crop=face" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
+          <div><div style="font-size:11px;font-weight:600;color:#22c55e">DJ Mike</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.3">coming up after this one! 🎧</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--bg-elevated);border:1px solid var(--border-subtle);margin-top:4px">
+          <input type="text" placeholder="Say something..." style="flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-size:11px;font-family:inherit">
+          <div style="width:24px;height:24px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;opacity:.4;cursor:pointer;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swipe hint -->
+    <div style="text-align:center;padding:20px 16px 16px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:11px">
+        <span>← Swipe to change station →</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  const labels = {dl:'Desktop Landing',ds:'Desktop Station',ml:'Mobile Landing',ms:'Mobile Station',rl:'Responsive Landing',rs:'Responsive Station'};
+  document.querySelectorAll('.view-tab').forEach(t => { if(t.textContent === labels[id]) t.classList.add('active'); });
+}
+</script>
+</body>
+</html>
