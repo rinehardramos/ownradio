@@ -24,6 +24,9 @@ RUN npm run build --workspace=apps/api
 FROM node:25-alpine
 WORKDIR /app
 
+ARG BUILD_VERSION=dev
+ENV BUILD_VERSION=$BUILD_VERSION
+
 COPY package.json package-lock.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/api/package.json ./apps/api/

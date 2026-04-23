@@ -7,6 +7,7 @@ import { authRoutes } from "./routes/auth.js";
 import { buildWebhookRoutes } from "./routes/webhooks.js";
 import { setupSocketHandlers } from "./ws/index.js";
 import { startMetadataPollers, stopAllPollers } from "./ws/metadata.js";
+import { prisma } from "./db/client.js";
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -18,8 +19,24 @@ export async function buildApp() {
 
   await app.register(cookie);
 
-  app.get("/health", async () => {
-    return { status: "ok", timestamp: new Date().toISOString() };
+  app.get("/health", async (_req, reply) => {
+    const dbOk = await prisma
+      .$queryRaw`SELECT 1`
+      .then(() => true)
+      .catch(() => false);
+
+    const status = dbOk ? "ok" : "degraded";
+    const body = {
+      status,
+      version: process.env.BUILD_VERSION || "dev",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      checks: {
+        database: dbOk ? "connected" : "unreachable",
+      },
+    };
+
+    return reply.status(dbOk ? 200 : 503).send(body);
   });
 
   app.register(stationRoutes);

@@ -73,8 +73,12 @@ jobs:
     needs: check
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # for git tag push
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for version script
 
       - uses: actions/setup-node@v4
         with:
@@ -84,11 +88,41 @@ jobs:
       - run: npm ci
       - run: npm install -g vercel@latest
 
+      - name: Generate version
+        id: version
+        run: echo "version=$(npx tsx scripts/version.ts)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate required env vars
+        run: npx tsx scripts/validate-env.ts --app=web
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_WS_URL: ${{ vars.NEXT_PUBLIC_WS_URL }}
+
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          BUILD_VERSION: ${{ steps.version.outputs.version }}
 
       - name: Deploy to production
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify deployment health
+        run: npx tsx scripts/verify-deploy.ts --url=https://ownradio.net/api/health --expected-version=${{ steps.version.outputs.version }}
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "::error::Deployment verification failed — rolling back to previous production deployment"
+          vercel rollback --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Tag release
+        if: success()
+        run: |
+          git tag "${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.version }}"

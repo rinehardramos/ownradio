@@ -3,7 +3,9 @@ import type { Listener, StationWithDJ, Song } from "@ownradio/shared";
 const TOKEN_KEY = "ownradio_token";
 
 function getBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  if (!url) throw new Error("NEXT_PUBLIC_API_URL is not configured");
+  return url;
 }
 
 export function getToken(): string | null {

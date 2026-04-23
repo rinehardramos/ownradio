@@ -9,7 +9,9 @@ export function getSocket(): Socket {
   }
 
   const token = getToken();
-  socket = io(process.env.NEXT_PUBLIC_WS_URL ?? "http://localhost:4000", {
+  const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+  if (!wsUrl) throw new Error("NEXT_PUBLIC_WS_URL is not configured");
+  socket = io(wsUrl, {
     auth: { token },
     autoConnect: true,
     reconnection: true,
