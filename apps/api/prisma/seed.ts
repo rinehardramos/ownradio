@@ -49,6 +49,16 @@ const STATIONS = [
     djName: "DJ Kuya",
     djBio: "Born and raised on OPM. Proudly playing the best of Philippine music.",
   },
+  {
+    name: "OwnRadio",
+    slug: "ownradio",
+    description: "AI-powered radio by PlayGen. Live DJ, real songs, zero dead air.",
+    stream: "https://api.playgen.site/stream/8edb1148-3423-43c7-9ffb-065aabdb3dfd/playlist.m3u8",
+    metadata: "https://api.playgen.site/stream/8edb1148-3423-43c7-9ffb-065aabdb3dfd/status.json",
+    genre: "OPM",
+    djName: "DJ Alex",
+    djBio: "An AI DJ powered by PlayGen. Curates OPM hits and talks between songs like a real radio host.",
+  },
 ];
 
 async function main() {

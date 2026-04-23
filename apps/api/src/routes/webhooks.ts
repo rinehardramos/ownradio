@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { Server as IOServer } from "socket.io";
 import type { StreamControlPayload, DjSwitchPayload } from "@ownradio/shared";
+import { prisma } from "../db/client.js";
 
 const WEBHOOK_SECRET = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
 
@@ -31,6 +32,16 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
       if (!payload?.action) {
         return reply.status(400).send({ error: "action required" });
       }
+      // Persist stream URL so page-load shows the latest stream without waiting for a Socket event
+      if (payload.action === "url_change" && payload.streamUrl) {
+        await prisma.station.update({
+          where: { slug },
+          data: { streamUrl: payload.streamUrl, isLive: true },
+        }).catch((err) => {
+          app.log.warn({ err, slug }, "[webhook] failed to persist stream_url");
+        });
+      }
+
       getIo().to(`station:${slug}`).emit("stream_control", payload);
       return { ok: true };
     });
