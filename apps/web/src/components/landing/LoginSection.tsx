@@ -40,7 +40,14 @@ export function LoginSection() {
       {/* Google OAuth button */}
       <button
         type="button"
-        onClick={() => alert("Google OAuth coming soon")}
+        onClick={() => {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+          if (!apiUrl) {
+            console.error('NEXT_PUBLIC_API_URL is not set');
+            return;
+          }
+          window.location.href = `${apiUrl}/auth/google`;
+        }}
         className="w-full flex items-center justify-center gap-3 rounded-full py-3 px-6 font-semibold text-sm text-white mb-3"
         style={{
           background: "linear-gradient(135deg, #ff2d78 0%, #ff6b9d 100%)",
