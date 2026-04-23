@@ -35,4 +35,4 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY apps/api/prisma ./apps/api/prisma
 
 EXPOSE 4000
-CMD ["node", "apps/api/dist/server.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy --schema=apps/api/prisma/schema.prisma && node apps/api/dist/server.js"]
