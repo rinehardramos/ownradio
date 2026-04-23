@@ -16,7 +16,7 @@ export function TopDJs({ djs }: TopDJsProps) {
   }
 
   return (
-    <section className="w-full py-8">
+    <section className="slide-up slide-up-delay-1 w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Top DJs</h2>
       <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }} className="scrollbar-hide">
         {djs.map((dj) => (

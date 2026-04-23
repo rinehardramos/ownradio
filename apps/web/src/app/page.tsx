@@ -7,31 +7,32 @@ import { TrendingSongs } from "@/components/landing/TrendingSongs";
 import { LoginSection } from "@/components/landing/LoginSection";
 import { LandingShell } from "@/components/layout/LandingShell";
 
-const PLACEHOLDER_STATIONS: StationWithDJ[] = [
+const MOCK_STATIONS: StationWithDJ[] = [
+  // ── LIVE ──────────────────────────────────────────────────────────────
   {
-    id: "placeholder-rock",
+    id: "mock-rock",
     name: "Rock Haven",
     slug: "rock-haven",
-    description: "Classic and modern rock hits",
-    streamUrl: "",
+    description: "Classic and modern rock — the riffs never stop.",
+    streamUrl: "mock",
     metadataUrl: "",
     genre: "Rock",
     artworkUrl: "",
-    isLive: false,
+    isLive: true,
     createdAt: "",
     updatedAt: "",
     dj: {
-      id: "dj-placeholder-1",
-      stationId: "placeholder-rock",
+      id: "dj-axel",
+      stationId: "mock-rock",
       name: "DJ Axel",
-      bio: "Rock aficionado spinning the best riffs.",
+      bio: "Rock aficionado spinning the best riffs since 2010.",
       avatarUrl: "",
       createdAt: "",
     },
-    listenerCount: 0,
+    listenerCount: 1243,
     currentSong: {
-      id: "song-p1",
-      stationId: "placeholder-rock",
+      id: "s-r1",
+      stationId: "mock-rock",
       title: "Bohemian Rhapsody",
       artist: "Queen",
       albumCoverUrl: null,
@@ -40,29 +41,29 @@ const PLACEHOLDER_STATIONS: StationWithDJ[] = [
     },
   },
   {
-    id: "placeholder-hiphop",
+    id: "mock-hiphop",
     name: "Beat Street",
     slug: "beat-street",
-    description: "Hip-hop and R&B vibes all day",
-    streamUrl: "",
+    description: "Hip-hop and R&B vibes all day, every day.",
+    streamUrl: "mock",
     metadataUrl: "",
-    genre: "Hip-Hop / R&B",
+    genre: "Hip-Hop",
     artworkUrl: "",
-    isLive: false,
+    isLive: true,
     createdAt: "",
     updatedAt: "",
     dj: {
-      id: "dj-placeholder-2",
-      stationId: "placeholder-hiphop",
+      id: "dj-mcflow",
+      stationId: "mock-hiphop",
       name: "MC Flow",
       bio: "Keeping the beat alive since day one.",
       avatarUrl: "",
       createdAt: "",
     },
-    listenerCount: 0,
+    listenerCount: 892,
     currentSong: {
-      id: "song-p2",
-      stationId: "placeholder-hiphop",
+      id: "s-h1",
+      stationId: "mock-hiphop",
       title: "Lose Yourself",
       artist: "Eminem",
       albumCoverUrl: null,
@@ -71,34 +72,190 @@ const PLACEHOLDER_STATIONS: StationWithDJ[] = [
     },
   },
   {
-    id: "placeholder-lofi",
+    id: "mock-lofi",
     name: "Chill Waves",
     slug: "chill-waves",
-    description: "Lo-fi beats to relax and study",
+    description: "Lo-fi beats to study, relax, and drift away.",
+    streamUrl: "mock",
+    metadataUrl: "",
+    genre: "Lo-Fi",
+    artworkUrl: "",
+    isLive: true,
+    createdAt: "",
+    updatedAt: "",
+    dj: {
+      id: "dj-luna",
+      stationId: "mock-lofi",
+      name: "DJ Luna",
+      bio: "Late-night lo-fi sessions — coffee optional.",
+      avatarUrl: "",
+      createdAt: "",
+    },
+    listenerCount: 2107,
+    currentSong: {
+      id: "s-l1",
+      stationId: "mock-lofi",
+      title: "Snowfall",
+      artist: "Øneheart & reidenshi",
+      albumCoverUrl: null,
+      playedAt: "",
+      duration: 186,
+    },
+  },
+  {
+    id: "mock-pop",
+    name: "Pop Spectrum",
+    slug: "pop-spectrum",
+    description: "The hottest pop hits, non-stop.",
+    streamUrl: "mock",
+    metadataUrl: "",
+    genre: "Pop",
+    artworkUrl: "",
+    isLive: true,
+    createdAt: "",
+    updatedAt: "",
+    dj: {
+      id: "dj-aria",
+      stationId: "mock-pop",
+      name: "DJ Aria",
+      bio: "Your daily dose of feel-good pop energy.",
+      avatarUrl: "",
+      createdAt: "",
+    },
+    listenerCount: 3418,
+    currentSong: {
+      id: "s-p1",
+      stationId: "mock-pop",
+      title: "As It Was",
+      artist: "Harry Styles",
+      albumCoverUrl: null,
+      playedAt: "",
+      duration: 167,
+    },
+  },
+  // ── COMING SOON ───────────────────────────────────────────────────────
+  {
+    id: "mock-opm",
+    name: "OPM Vibes",
+    slug: "opm-vibes",
+    description: "The best of Original Pilipino Music.",
     streamUrl: "",
     metadataUrl: "",
-    genre: "Lo-Fi / Ambient",
+    genre: "OPM",
     artworkUrl: "",
     isLive: false,
     createdAt: "",
     updatedAt: "",
     dj: {
-      id: "dj-placeholder-3",
-      stationId: "placeholder-lofi",
-      name: "DJ Luna",
-      bio: "Late-night lo-fi sessions.",
+      id: "dj-kiko",
+      stationId: "mock-opm",
+      name: "DJ Kiko",
+      bio: "Bringing OPM to the world, one song at a time.",
       avatarUrl: "",
       createdAt: "",
     },
     listenerCount: 0,
     currentSong: {
-      id: "song-p3",
-      stationId: "placeholder-lofi",
-      title: "Snowman",
-      artist: "WYS",
+      id: "s-o1",
+      stationId: "mock-opm",
+      title: "Ligaya",
+      artist: "Eraserheads",
       albumCoverUrl: null,
       playedAt: "",
-      duration: 180,
+      duration: 205,
+    },
+  },
+  {
+    id: "mock-jazz",
+    name: "Neon Jazz",
+    slug: "neon-jazz",
+    description: "Late-night jazz with a neon-lit soul.",
+    streamUrl: "",
+    metadataUrl: "",
+    genre: "Jazz",
+    artworkUrl: "",
+    isLive: false,
+    createdAt: "",
+    updatedAt: "",
+    dj: {
+      id: "dj-miles",
+      stationId: "mock-jazz",
+      name: "DJ Miles",
+      bio: "Jazz purist with a love for midnight sessions.",
+      avatarUrl: "",
+      createdAt: "",
+    },
+    listenerCount: 0,
+    currentSong: {
+      id: "s-j1",
+      stationId: "mock-jazz",
+      title: "So What",
+      artist: "Miles Davis",
+      albumCoverUrl: null,
+      playedAt: "",
+      duration: 556,
+    },
+  },
+  {
+    id: "mock-edm",
+    name: "Bass Drop",
+    slug: "bass-drop",
+    description: "Electronic beats that shake the floor.",
+    streamUrl: "",
+    metadataUrl: "",
+    genre: "Electronic",
+    artworkUrl: "",
+    isLive: false,
+    createdAt: "",
+    updatedAt: "",
+    dj: {
+      id: "dj-zara",
+      stationId: "mock-edm",
+      name: "DJ Zara",
+      bio: "From deep house to hard bass — Zara drops it all.",
+      avatarUrl: "",
+      createdAt: "",
+    },
+    listenerCount: 0,
+    currentSong: {
+      id: "s-e1",
+      stationId: "mock-edm",
+      title: "Levels",
+      artist: "Avicii",
+      albumCoverUrl: null,
+      playedAt: "",
+      duration: 199,
+    },
+  },
+  {
+    id: "mock-rnb",
+    name: "Smooth R&B",
+    slug: "smooth-rnb",
+    description: "Soulful R&B for every mood.",
+    streamUrl: "",
+    metadataUrl: "",
+    genre: "R&B",
+    artworkUrl: "",
+    isLive: false,
+    createdAt: "",
+    updatedAt: "",
+    dj: {
+      id: "dj-nova",
+      stationId: "mock-rnb",
+      name: "DJ Nova",
+      bio: "Smooth grooves and soulful sounds, always.",
+      avatarUrl: "",
+      createdAt: "",
+    },
+    listenerCount: 0,
+    currentSong: {
+      id: "s-rb1",
+      stationId: "mock-rnb",
+      title: "No Ordinary Love",
+      artist: "Sade",
+      albumCoverUrl: null,
+      playedAt: "",
+      duration: 264,
     },
   },
 ];
@@ -114,39 +271,30 @@ async function fetchStations(): Promise<StationWithDJ[]> {
 export default async function Home() {
   const apiStations = await fetchStations();
 
-  // Pad with placeholders so the UI grid looks full
-  const neededPlaceholders = Math.max(0, 4 - apiStations.length);
-  const stations = [
-    ...apiStations,
-    ...PLACEHOLDER_STATIONS.slice(0, neededPlaceholders),
-  ];
+  // Merge API stations first, then pad with mock data
+  const apiSlugs = new Set(apiStations.map((s) => s.slug));
+  const mockPad = MOCK_STATIONS.filter((s) => !apiSlugs.has(s.slug));
+  const stations = [...apiStations, ...mockPad];
 
   const djs = stations.flatMap((s) => (s.dj ? [s.dj] : []));
 
   const songs = stations.flatMap((s) =>
     s.currentSong
-      ? [
-          {
-            song: s.currentSong,
-            stationName: s.name,
-            reactionCount: s.listenerCount ?? 0,
-          },
-        ]
+      ? [{ song: s.currentSong, stationName: s.name, reactionCount: s.listenerCount ?? 0 }]
       : []
   );
 
-  const totalListeners = apiStations.reduce(
-    (sum, s) => sum + (s.listenerCount ?? 0),
-    0
-  );
+  const liveStations = stations.filter((s) => s.isLive);
+  const totalListeners = stations.reduce((sum, s) => sum + (s.listenerCount ?? 0), 0);
 
   return (
-    <LandingShell stations={apiStations}>
+    <LandingShell stations={stations}>
       <main className="overflow-y-auto">
         <Hero
-          stationCount={apiStations.length}
+          stationCount={stations.length}
           listenerCount={totalListeners}
-          djCount={apiStations.flatMap((s) => (s.dj ? [s.dj] : [])).length}
+          djCount={djs.length}
+          liveCount={liveStations.length}
         />
         <div className="mx-auto w-full max-w-5xl px-4 sm:px-8">
           <FeaturedStations stations={stations} />

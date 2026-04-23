@@ -2,9 +2,15 @@ interface HeroProps {
   stationCount: number;
   listenerCount: number;
   djCount: number;
+  liveCount: number;
 }
 
-export function Hero({ stationCount, listenerCount, djCount }: HeroProps) {
+function fmt(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return String(n);
+}
+
+export function Hero({ stationCount, listenerCount, djCount, liveCount }: HeroProps) {
   return (
     <section className="w-full bg-brand-dark px-6 py-14 text-center">
       {/* Animated radio icon */}
@@ -18,15 +24,7 @@ export function Hero({ stationCount, listenerCount, djCount }: HeroProps) {
           <circle cx="32" cy="32" r="28" fill="#ff2d78" opacity="0.15" />
           <circle cx="32" cy="32" r="18" fill="#ff2d78" opacity="0.3" />
           <circle cx="32" cy="32" r="9" fill="#ff2d78" />
-          <line
-            x1="32"
-            y1="4"
-            x2="50"
-            y2="14"
-            stroke="#ff6b9d"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
+          <line x1="32" y1="4" x2="50" y2="14" stroke="#ff6b9d" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       </div>
 
@@ -49,30 +47,25 @@ export function Hero({ stationCount, listenerCount, djCount }: HeroProps) {
       </p>
 
       {/* Stats */}
-      <div className="mt-8 flex justify-center gap-8">
+      <div className="mt-8 flex justify-center gap-8 flex-wrap">
         <div className="flex flex-col items-center">
-          <span className="text-2xl font-bold text-brand-pink">
-            {stationCount}
-          </span>
-          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
-            Stations
-          </span>
+          <span className="text-2xl font-bold" style={{ color: 'var(--pink)' }}>{stationCount}</span>
+          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">Stations</span>
         </div>
-        <div className="w-px bg-brand-dark-border" />
+        <div className="w-px bg-white/10" />
         <div className="flex flex-col items-center">
-          <span className="text-2xl font-bold text-brand-pink">
-            {listenerCount}
-          </span>
-          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
-            Listeners
-          </span>
+          <span className="text-2xl font-bold" style={{ color: '#22c55e' }}>{liveCount}</span>
+          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">Live Now</span>
         </div>
-        <div className="w-px bg-brand-dark-border" />
+        <div className="w-px bg-white/10" />
         <div className="flex flex-col items-center">
-          <span className="text-2xl font-bold text-brand-pink">{djCount}</span>
-          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
-            DJs
-          </span>
+          <span className="text-2xl font-bold" style={{ color: 'var(--pink)' }}>{fmt(listenerCount)}</span>
+          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">Listeners</span>
+        </div>
+        <div className="w-px bg-white/10" />
+        <div className="flex flex-col items-center">
+          <span className="text-2xl font-bold" style={{ color: 'var(--pink)' }}>{djCount}</span>
+          <span className="text-xs text-white/50 uppercase tracking-wider mt-1">DJs</span>
         </div>
       </div>
     </section>

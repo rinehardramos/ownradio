@@ -22,7 +22,7 @@ export function TrendingSongs({ songs }: TrendingSongsProps) {
   }
 
   return (
-    <section className="w-full py-8">
+    <section className="slide-up slide-up-delay-2 w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Trending Songs</h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0 24px' }}>
         {songs.map((item, index) => (

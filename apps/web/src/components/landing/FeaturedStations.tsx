@@ -17,7 +17,7 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
   }
 
   return (
-    <section className="w-full py-8">
+    <section className="slide-up w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stations.map((station) => {
@@ -42,6 +42,14 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.3)' }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
                   </div>
+                </div>
+              )}
+
+              {/* Listener count (top right) */}
+              {station.isLive && station.listenerCount > 0 && (
+                <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', padding: '3px 8px', borderRadius: 'var(--radius-full)', fontSize: '10px', color: 'rgba(255,255,255,0.8)' }}>
+                  <span style={{ display: 'inline-block', width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
+                  {station.listenerCount >= 1000 ? `${(station.listenerCount / 1000).toFixed(1)}K` : station.listenerCount}
                 </div>
               )}
 
