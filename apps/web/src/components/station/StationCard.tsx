@@ -1,133 +1,383 @@
 "use client";
 
-import Image from "next/image";
-import type { StationWithDJ } from "@ownradio/shared";
-import { useStation } from "@/hooks/useStation";
-import { useAuth } from "@/hooks/useAuth";
-import { AudioControls } from "./AudioControls";
+import { useRef, useState } from "react";
+import type {
+  StationWithDJ,
+  ReactionType,
+  Song,
+  ChatMessage,
+  DjSwitchPayload,
+  Listener,
+} from "@ownradio/shared";
+import { AudioControls, type AudioControlsHandle } from "./AudioControls";
 import { ReactionBar } from "./ReactionBar";
-import { LiveChat } from "./LiveChat";
-import { DJSection } from "./DJSection";
+import { PlaylistModal } from "./PlaylistModal";
+import { TopSongsModal } from "./TopSongsModal";
+import { FansModal } from "./FansModal";
+import { getStationPlaceholder } from "@/lib/placeholders";
 
 interface StationCardProps {
   station: StationWithDJ;
   isActive: boolean;
+  currentSong: Song | null;
+  activeReaction: ReactionType | null;
+  streamUrl: string | null;
+  activeDj: DjSwitchPayload | null;
+  listenerCount: number;
+  messages: ChatMessage[];
+  user: Listener | null;
+  onReact: (type: ReactionType) => void;
+  onSendMessage: (text: string) => void;
+  onPlayStateChange: (playing: boolean) => void;
+  onVolumeChange: (volume: number) => void;
+  audioRef?: React.RefObject<AudioControlsHandle | null>;
 }
 
-const GENRE_GRADIENTS: Record<string, string> = {
-  Rock: "from-red-900 via-orange-900 to-brand-dark",
-  "Hip-Hop / R&B": "from-purple-900 via-indigo-900 to-brand-dark",
-  "Lo-Fi / Ambient": "from-blue-900 via-teal-900 to-brand-dark",
-  OPM: "from-yellow-900 via-orange-900 to-brand-dark",
-};
+type ModalType = "playlist" | "top10" | "fans" | null;
 
-function getGradient(genre: string): string {
-  return (
-    GENRE_GRADIENTS[genre] ?? "from-brand-dark-card via-brand-dark to-brand-dark"
-  );
-}
+export function StationCard({
+  station,
+  isActive,
+  currentSong,
+  activeReaction,
+  streamUrl,
+  activeDj,
+  listenerCount,
+  // user and onSendMessage are part of the prop contract but consumed by parent (AppShell/ChatPanel)
+  onReact,
+  onPlayStateChange,
+  onVolumeChange,
+  audioRef,
+}: StationCardProps) {
+  const internalRef = useRef<AudioControlsHandle | null>(null);
+  const resolvedRef = audioRef ?? internalRef;
 
-export function StationCard({ station, isActive }: StationCardProps) {
-  const {
-    reactions,
-    messages,
-    listenerCount,
-    activeReaction,
-    currentSong,
-    sendReaction,
-    sendMessage,
-  } = useStation(station);
+  const [openModal, setOpenModal] = useState<ModalType>(null);
 
-  const { user } = useAuth();
+  const heroImg = station.artworkUrl || getStationPlaceholder(station.genre);
+  const djName = activeDj?.name ?? station.dj?.name ?? null;
 
-  const gradient = getGradient(station.genre);
-
-  function handleSend(content: string) {
-    if (!user) return;
-    sendMessage(content);
-  }
+  const effectiveStreamUrl = streamUrl ?? station.streamUrl;
 
   return (
-    <div className="h-full flex flex-col bg-brand-dark overflow-y-auto">
-      {/* Hero section */}
+    <div style={{ position: "relative", width: "100%", minHeight: "100%" }}>
+      {/* Hero background image */}
       <div
-        className={`bg-gradient-to-b ${gradient} px-5 pt-10 pb-6 flex flex-col gap-3 flex-shrink-0`}
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url(${heroImg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.5) saturate(1.2)",
+        }}
+      />
+      {/* Gradient overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to top, var(--bg-primary) 0%, transparent 60%)",
+        }}
+      />
+
+      {/* Content */}
+      <div
+        style={{
+          position: "relative",
+          padding: "24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+        }}
       >
-        {/* Genre tag */}
-        <span className="inline-block self-start px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold uppercase tracking-wide text-white/70">
-          {station.genre}
-        </span>
+        {/* Top row: genre badge + LIVE indicator */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span
+            style={{
+              padding: "4px 12px",
+              borderRadius: "9999px",
+              background: "rgba(255,255,255,0.1)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              fontSize: "11px",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "rgba(255,255,255,0.7)",
+            }}
+          >
+            {station.genre}
+          </span>
+          {station.isLive && (
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "4px 12px",
+                borderRadius: "9999px",
+                background: "rgba(255,45,120,0.2)",
+                border: "1px solid rgba(255,45,120,0.4)",
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "var(--pink)",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "var(--pink)",
+                }}
+              />
+              LIVE
+            </span>
+          )}
+        </div>
 
         {/* Station name */}
-        <h1 className="text-4xl font-extrabold text-white leading-tight">
+        <h1
+          style={{
+            fontSize: "32px",
+            fontWeight: 900,
+            color: "#fff",
+            margin: 0,
+            lineHeight: 1.1,
+          }}
+        >
           {station.name}
         </h1>
 
-        {/* Current song */}
-        {currentSong ? (
-          <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3 backdrop-blur-sm">
-            {currentSong.albumCoverUrl ? (
-              <Image
+        {/* Glassmorphic now-playing card */}
+        <div
+          className="glass"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "12px 16px",
+            borderRadius: "var(--radius-lg)",
+          }}
+        >
+          {/* Album art / icon */}
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              borderRadius: "var(--radius-md)",
+              background: "rgba(255,45,120,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "22px",
+              flexShrink: 0,
+              overflow: "hidden",
+            }}
+          >
+            {currentSong?.albumCoverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={currentSong.albumCoverUrl}
                 alt={currentSong.title}
-                width={48}
-                height={48}
-                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-brand-pink/20 flex items-center justify-center text-2xl flex-shrink-0">
-                🎵
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="text-white font-semibold text-sm truncate">
-                {currentSong.title}
-              </p>
-              <p className="text-white/60 text-xs truncate">{currentSong.artist}</p>
-            </div>
-            {/* Animated playing indicator */}
-            {isActive && (
-              <div className="ml-auto flex items-end gap-0.5 h-4 flex-shrink-0">
-                <span className="w-1 bg-brand-pink rounded-sm animate-bounce" style={{ height: "40%", animationDelay: "0ms" }} />
-                <span className="w-1 bg-brand-pink rounded-sm animate-bounce" style={{ height: "100%", animationDelay: "150ms" }} />
-                <span className="w-1 bg-brand-pink rounded-sm animate-bounce" style={{ height: "60%", animationDelay: "300ms" }} />
-              </div>
+              "🎵"
             )}
           </div>
-        ) : (
-          <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-3">
-            <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center text-2xl flex-shrink-0">
-              📻
-            </div>
-            <p className="text-white/50 text-sm">Loading track info...</p>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: "14px",
+                fontWeight: 600,
+                color: "#fff",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {currentSong ? currentSong.title : "Loading track info..."}
+            </p>
+            <p
+              style={{
+                margin: "2px 0 0",
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.6)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {currentSong ? currentSong.artist : ""}
+            </p>
           </div>
-        )}
-      </div>
 
-      {/* Audio controls */}
-      <div className="bg-brand-dark-card border-b border-brand-dark-border flex-shrink-0">
-        <AudioControls streamUrl={station.streamUrl} isActive={isActive} />
-      </div>
+          {/* Equalizer bars */}
+          {isActive && currentSong && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "3px",
+                height: "20px",
+                flexShrink: 0,
+              }}
+            >
+              {[1, 2, 3].map((n) => (
+                <span
+                  key={n}
+                  className="playing-bar"
+                  style={{
+                    width: "3px",
+                    background: "var(--pink)",
+                    borderRadius: "2px",
+                    display: "block",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Reaction bar */}
-      <div className="bg-brand-dark-card border-b border-brand-dark-border flex-shrink-0">
+        {/* Reaction bar */}
         <ReactionBar
           activeReaction={activeReaction}
-          onReact={sendReaction}
+          onReact={onReact}
+          orientation="horizontal"
         />
-      </div>
 
-      {/* DJ section */}
-      {station.dj && (
-        <div className="bg-brand-dark-card border-b border-brand-dark-border flex-shrink-0">
-          <DJSection dj={station.dj} listenerCount={listenerCount} />
+        {/* Audio controls */}
+        {effectiveStreamUrl && (
+          <AudioControls
+            ref={resolvedRef}
+            streamUrl={effectiveStreamUrl}
+            isActive={isActive}
+            onPlayStateChange={onPlayStateChange}
+            onVolumeChange={onVolumeChange}
+          />
+        )}
+
+        {/* DJ card */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            background: "var(--bg-card)",
+            borderRadius: "var(--radius-lg)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background: "rgba(255,45,120,0.2)",
+                border: "1px solid rgba(255,45,120,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "18px",
+                flexShrink: 0,
+              }}
+            >
+              🎧
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {djName ?? "Unknown DJ"}
+              </p>
+              <p
+                style={{
+                  margin: "2px 0 0",
+                  fontSize: "11px",
+                  color: "rgba(255,255,255,0.5)",
+                }}
+              >
+                {listenerCount.toLocaleString()} listening
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            {(
+              [
+                { label: "Playlist", modal: "playlist" as ModalType },
+                { label: "Top 10", modal: "top10" as ModalType },
+                { label: "Fans", modal: "fans" as ModalType },
+              ] as const
+            ).map(({ label, modal }) => (
+              <button
+                key={label}
+                onClick={() => setOpenModal(modal)}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "9999px",
+                  border: "1px solid var(--border-medium)",
+                  background: "none",
+                  fontSize: "11px",
+                  color: "rgba(255,255,255,0.6)",
+                  cursor: "pointer",
+                  transition: "border-color 150ms, color 150ms",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    "rgba(255,45,120,0.5)";
+                  (e.currentTarget as HTMLElement).style.color =
+                    "rgba(255,255,255,0.9)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    "var(--border-medium)";
+                  (e.currentTarget as HTMLElement).style.color =
+                    "rgba(255,255,255,0.6)";
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      )}
-
-      {/* Live chat */}
-      <div className="flex-1 px-4 py-4">
-        <LiveChat messages={messages} onSend={handleSend} user={user} />
       </div>
+
+      {/* Modals */}
+      {openModal === "playlist" && (
+        <PlaylistModal onClose={() => setOpenModal(null)} />
+      )}
+      {openModal === "top10" && (
+        <TopSongsModal onClose={() => setOpenModal(null)} />
+      )}
+      {openModal === "fans" && (
+        <FansModal
+          listenerCount={listenerCount}
+          onClose={() => setOpenModal(null)}
+        />
+      )}
     </div>
   );
 }

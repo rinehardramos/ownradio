@@ -2,7 +2,12 @@
 
 import { useState, useRef } from "react";
 import type { StationWithDJ } from "@ownradio/shared";
+import { useStation } from "@/hooks/useStation";
+import { useAuth } from "@/hooks/useAuth";
+import { AppShell } from "@/components/layout/AppShell";
+import { ChatPanel } from "./ChatPanel";
 import { StationCard } from "./StationCard";
+import type { AudioControlsHandle } from "./AudioControls";
 
 interface StationCarouselProps {
   stations: StationWithDJ[];
@@ -11,14 +16,37 @@ interface StationCarouselProps {
 
 const MIN_SWIPE_PX = 50;
 
-export function StationCarousel({
+// Inner component — only rendered when stations.length > 0
+function StationCarouselInner({
   stations,
-  initialIndex = 0,
-}: StationCarouselProps) {
+  initialIndex,
+}: {
+  stations: [StationWithDJ, ...StationWithDJ[]];
+  initialIndex: number;
+}) {
   const [currentIndex, setCurrentIndex] = useState(
     Math.max(0, Math.min(initialIndex, stations.length - 1))
   );
 
+  const currentStation = stations[currentIndex] ?? stations[0];
+  const audioRef = useRef<AudioControlsHandle | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.8);
+
+  const { user } = useAuth();
+
+  const {
+    currentSong,
+    activeReaction,
+    listenerCount,
+    messages,
+    streamUrl,
+    activeDj,
+    sendReaction,
+    sendMessage,
+  } = useStation(currentStation);
+
+  // === SWIPE / TOUCH GESTURE HANDLERS (preserved from original) ===
   const touchStartX = useRef<number | null>(null);
   const touchCurrentX = useRef<number | null>(null);
 
@@ -50,7 +78,116 @@ export function StationCarousel({
     touchStartX.current = null;
     touchCurrentX.current = null;
   }
+  // === END SWIPE HANDLERS ===
 
+  return (
+    <AppShell
+      stations={stations}
+      activeStationId={currentStation.id}
+      onStationChange={setCurrentIndex}
+      stationCount={stations.length}
+      currentIndex={currentIndex}
+      onDotClick={setCurrentIndex}
+      currentSong={
+        currentSong
+          ? { title: currentSong.title, artist: currentSong.artist }
+          : null
+      }
+      currentStation={currentStation}
+      isPlaying={isPlaying}
+      volume={volume}
+      listenerCount={listenerCount}
+      onTogglePlay={() => audioRef.current?.togglePlay()}
+      onVolumeChange={(v) => {
+        setVolume(v);
+        audioRef.current?.setVolume(v);
+      }}
+      chatContent={
+        <ChatPanel
+          messages={messages}
+          user={user}
+          onSend={sendMessage}
+          onlineCount={listenerCount}
+          height="100%"
+        />
+      }
+    >
+      {/* Station cards carousel with swipe support */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          overflow: "hidden",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {stations.map((station, i) => (
+          <div
+            key={station.id}
+            style={{
+              position: "absolute",
+              inset: 0,
+              transform: `translateX(${(i - currentIndex) * 100}%)`,
+              transition: "transform 300ms cubic-bezier(.4,0,.2,1)",
+            }}
+            aria-hidden={i !== currentIndex}
+          >
+            <StationCard
+              station={station}
+              isActive={i === currentIndex}
+              currentSong={i === currentIndex ? currentSong : null}
+              activeReaction={i === currentIndex ? activeReaction : null}
+              streamUrl={i === currentIndex ? (streamUrl ?? null) : null}
+              activeDj={i === currentIndex ? activeDj : null}
+              listenerCount={i === currentIndex ? listenerCount : 0}
+              messages={i === currentIndex ? messages : []}
+              user={user}
+              onReact={sendReaction}
+              onSendMessage={sendMessage}
+              onPlayStateChange={setIsPlaying}
+              onVolumeChange={setVolume}
+              audioRef={i === currentIndex ? audioRef : undefined}
+            />
+          </div>
+        ))}
+
+        {/* Left tap zone — previous */}
+        {currentIndex > 0 && (
+          <button
+            onClick={goPrev}
+            aria-label="Previous station"
+            className="absolute left-0 top-0 h-full w-[20%] z-10 flex items-center justify-start pl-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
+          >
+            <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
+              ←
+            </div>
+          </button>
+        )}
+
+        {/* Right tap zone — next */}
+        {currentIndex < stations.length - 1 && (
+          <button
+            onClick={goNext}
+            aria-label="Next station"
+            className="absolute right-0 top-0 h-full w-[20%] z-10 flex items-center justify-end pr-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
+          >
+            <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
+              →
+            </div>
+          </button>
+        )}
+      </div>
+    </AppShell>
+  );
+}
+
+export function StationCarousel({
+  stations,
+  initialIndex = 0,
+}: StationCarouselProps) {
   if (stations.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen text-white/50">
@@ -60,71 +197,9 @@ export function StationCarousel({
   }
 
   return (
-    <div
-      className="relative h-screen overflow-hidden bg-brand-dark"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Dot indicators */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 pointer-events-none">
-        {stations.map((_, i) => (
-          <span
-            key={i}
-            className={`rounded-full transition-all duration-200 ${
-              i === currentIndex
-                ? "w-4 h-2 bg-brand-pink"
-                : "w-2 h-2 bg-white/30"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Station cards — render current + adjacent for performance */}
-      {stations.map((station, i) => {
-        const isVisible = Math.abs(i - currentIndex) <= 1;
-        if (!isVisible) return null;
-
-        return (
-          <div
-            key={station.id}
-            className="absolute inset-0 transition-transform duration-300 ease-in-out"
-            style={{
-              transform: `translateX(${(i - currentIndex) * 100}%)`,
-              visibility: i === currentIndex ? "visible" : "hidden",
-            }}
-            aria-hidden={i !== currentIndex}
-          >
-            <StationCard station={station} isActive={i === currentIndex} />
-          </div>
-        );
-      })}
-
-      {/* Left tap zone — previous */}
-      {currentIndex > 0 && (
-        <button
-          onClick={goPrev}
-          aria-label="Previous station"
-          className="absolute left-0 top-0 h-full w-[20%] z-10 flex items-center justify-start pl-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
-        >
-          <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
-            ←
-          </div>
-        </button>
-      )}
-
-      {/* Right tap zone — next */}
-      {currentIndex < stations.length - 1 && (
-        <button
-          onClick={goNext}
-          aria-label="Next station"
-          className="absolute right-0 top-0 h-full w-[20%] z-10 flex items-center justify-end pr-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
-        >
-          <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
-            →
-          </div>
-        </button>
-      )}
-    </div>
+    <StationCarouselInner
+      stations={stations as [StationWithDJ, ...StationWithDJ[]]}
+      initialIndex={initialIndex}
+    />
   );
 }
