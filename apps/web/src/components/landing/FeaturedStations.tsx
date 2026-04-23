@@ -1,19 +1,9 @@
 import Link from "next/link";
 import type { StationWithDJ } from "@ownradio/shared";
+import { getStationPlaceholder } from "@/lib/placeholders";
 
 interface FeaturedStationsProps {
   stations: StationWithDJ[];
-}
-
-const GENRE_GRADIENTS: Record<string, string> = {
-  Rock: "from-red-800 to-orange-700",
-  "Hip-Hop / R&B": "from-purple-800 to-blue-700",
-  "Lo-Fi / Ambient": "from-teal-800 to-cyan-700",
-  OPM: "from-yellow-700 to-pink-700",
-};
-
-function getGradient(genre: string): string {
-  return GENRE_GRADIENTS[genre] ?? "from-brand-dark-card to-brand-dark-border";
 }
 
 export function FeaturedStations({ stations }: FeaturedStationsProps) {
@@ -29,83 +19,48 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
   return (
     <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
-      {/* Mobile: horizontal scroll — Desktop: grid */}
-      <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
         {stations.map((station) => {
           const isPlaceholder = !station.isLive && !station.streamUrl;
 
           const card = (
-              <div
-                className={`relative flex flex-col justify-between rounded-2xl bg-gradient-to-br ${getGradient(station.genre)} p-4 h-48 ${isPlaceholder ? "opacity-60" : "cursor-pointer hover:opacity-90"} transition-opacity w-full`}
-              >
-                {/* Badge */}
-                {station.isLive ? (
-                  <span className="self-start rounded-full bg-brand-pink px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-                    LIVE
-                  </span>
-                ) : (
-                  <span className="self-start rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/70">
-                    COMING SOON
-                  </span>
-                )}
+            <div
+              style={{ position: 'relative', borderRadius: 'var(--radius-lg)', overflow: 'hidden', aspectRatio: '16/9', cursor: isPlaceholder ? 'default' : 'pointer' }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={getStationPlaceholder(station.genre)}
+                alt={station.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,15,26,0.9) 0%, rgba(0,0,0,0.1) 60%)' }} />
 
-                {/* Bottom info */}
-                <div className="mt-auto">
-                  <p className="text-sm font-bold text-white leading-tight truncate">
-                    {station.name}
-                  </p>
-                  <span className="mt-1 inline-block rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-white/80">
-                    {station.genre}
-                  </span>
-                  {station.dj && (
-                    <p className="mt-1 text-xs text-white/70 truncate">
-                      {station.dj.name}
-                    </p>
-                  )}
-                  {station.currentSong && (
-                    <p className="mt-0.5 text-[11px] text-white/50 truncate">
-                      {station.currentSong.title}
-                    </p>
-                  )}
-                  {station.isLive && (
-                    <div className="mt-1 flex items-center gap-1">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="h-3 w-3 text-white/50"
-                        aria-hidden="true"
-                      >
-                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 11-4 0 2 2 0 014 0zM2 17a6 6 0 0116 0H2z" />
-                      </svg>
-                      <span className="text-[10px] text-white/50">
-                        {station.listenerCount ?? 0}
-                      </span>
-                    </div>
-                  )}
-                </div>
+              {/* LIVE or COMING SOON badge */}
+              <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
+                {station.isLive
+                  ? <span style={{ background: 'var(--pink)', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: '#fff' }}>LIVE</span>
+                  : <span style={{ background: 'rgba(0,0,0,0.5)', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)' }}>COMING SOON</span>
+                }
               </div>
+
+              {/* Station info at bottom */}
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700 }}>{station.name}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{station.genre}</div>
+              </div>
+            </div>
           );
 
           if (isPlaceholder) {
             return (
-              <div
-                key={station.id}
-                className="flex-none sm:flex-auto"
-                style={{ width: 160 }}
-              >
+              <div key={station.id}>
                 {card}
               </div>
             );
           }
 
           return (
-            <Link
-              key={station.id}
-              href={`/station/${station.slug}`}
-              className="flex-none sm:flex-auto"
-              style={{ width: 160 }}
-            >
+            <Link key={station.id} href={`/station/${station.slug}`}>
               {card}
             </Link>
           );

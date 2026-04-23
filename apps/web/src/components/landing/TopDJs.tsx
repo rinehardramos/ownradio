@@ -4,13 +4,6 @@ interface TopDJsProps {
   djs: DJ[];
 }
 
-const AVATAR_GRADIENTS = [
-  "from-pink-500 to-rose-600",
-  "from-violet-500 to-purple-600",
-  "from-cyan-500 to-teal-600",
-  "from-amber-400 to-orange-500",
-];
-
 export function TopDJs({ djs }: TopDJsProps) {
   if (djs.length === 0) {
     return (
@@ -24,35 +17,25 @@ export function TopDJs({ djs }: TopDJsProps) {
   return (
     <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Top DJs</h2>
-      <div className="flex gap-6 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {djs.map((dj, index) => (
-          <div
-            key={dj.id}
-            className="flex-none flex flex-col items-center gap-2 cursor-pointer"
-          >
-            {/* Avatar bubble */}
-            <div className="relative">
-              {dj.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={dj.avatarUrl}
-                  alt={dj.name}
-                  className="h-14 w-14 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  className={`h-14 w-14 rounded-full bg-gradient-to-br ${AVATAR_GRADIENTS[index % AVATAR_GRADIENTS.length]} flex items-center justify-center text-white font-bold text-lg`}
-                >
-                  {dj.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {/* Online indicator */}
-              <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-brand-dark" />
+      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }} className="scrollbar-hide">
+        {djs.map((dj) => (
+          <div key={dj.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', border: '2px solid var(--border-medium)', overflow: 'hidden' }}>
+                {dj.avatarUrl
+                  ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={dj.avatarUrl} alt={dj.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )
+                  : '🎧'
+                }
+              </div>
+              {/* Online dot */}
+              <div style={{ position: 'absolute', bottom: '2px', right: '2px', width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2px solid var(--bg-primary)' }} />
             </div>
-            {/* DJ name */}
-            <p className="text-xs text-white/80 text-center max-w-[64px] truncate">
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', width: '72px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
               {dj.name}
-            </p>
+            </span>
           </div>
         ))}
       </div>
