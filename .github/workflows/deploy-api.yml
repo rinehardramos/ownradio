@@ -8,6 +8,7 @@ on:
       - 'packages/shared/**'
       - 'package.json'
       - 'package-lock.json'
+  workflow_dispatch:
 
 permissions:
   contents: write    # for git tag push
