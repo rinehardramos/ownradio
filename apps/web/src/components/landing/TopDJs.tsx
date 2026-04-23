@@ -1,4 +1,5 @@
 import type { DJ } from "@ownradio/shared";
+import { DJ_PLACEHOLDER } from "@/lib/placeholders";
 
 interface TopDJsProps {
   djs: DJ[];
@@ -21,14 +22,9 @@ export function TopDJs({ djs }: TopDJsProps) {
         {djs.map((dj) => (
           <div key={dj.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
             <div style={{ position: 'relative' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', border: '2px solid var(--border-medium)', overflow: 'hidden' }}>
-                {dj.avatarUrl
-                  ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={dj.avatarUrl} alt={dj.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  )
-                  : '🎧'
-                }
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-elevated)', border: '2px solid var(--border-medium)', overflow: 'hidden' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={dj.avatarUrl || DJ_PLACEHOLDER} alt={dj.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               {/* Online dot */}
               <div style={{ position: 'absolute', bottom: '2px', right: '2px', width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e', border: '2px solid var(--bg-primary)' }} />

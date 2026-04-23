@@ -26,10 +26,8 @@ export default async function StationPage({ params }: StationPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-brand-dark flex justify-center">
-      <div className="w-full max-w-[430px]">
-        <StationCarousel stations={stations} initialIndex={initialIndex} />
-      </div>
+    <div className="min-h-screen bg-brand-dark">
+      <StationCarousel stations={stations} initialIndex={initialIndex} />
     </div>
   );
 }

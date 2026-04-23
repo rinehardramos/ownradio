@@ -5,6 +5,7 @@ import { FeaturedStations } from "@/components/landing/FeaturedStations";
 import { TopDJs } from "@/components/landing/TopDJs";
 import { TrendingSongs } from "@/components/landing/TrendingSongs";
 import { LoginSection } from "@/components/landing/LoginSection";
+import { LandingShell } from "@/components/layout/LandingShell";
 
 const PLACEHOLDER_STATIONS: StationWithDJ[] = [
   {
@@ -140,18 +141,20 @@ export default async function Home() {
   );
 
   return (
-    <main className="min-h-screen bg-brand-dark overflow-y-auto">
-      <Hero
-        stationCount={apiStations.length}
-        listenerCount={totalListeners}
-        djCount={apiStations.flatMap((s) => (s.dj ? [s.dj] : [])).length}
-      />
-      <div className="mx-auto w-full max-w-5xl px-4 sm:px-8">
-        <FeaturedStations stations={stations} />
-        <TopDJs djs={djs} />
-        <TrendingSongs songs={songs} />
-        <LoginSection />
-      </div>
-    </main>
+    <LandingShell stations={apiStations}>
+      <main className="overflow-y-auto">
+        <Hero
+          stationCount={apiStations.length}
+          listenerCount={totalListeners}
+          djCount={apiStations.flatMap((s) => (s.dj ? [s.dj] : [])).length}
+        />
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-8">
+          <FeaturedStations stations={stations} />
+          <TopDJs djs={djs} />
+          <TrendingSongs songs={songs} />
+          <LoginSection />
+        </div>
+      </main>
+    </LandingShell>
   );
 }

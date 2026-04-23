@@ -32,7 +32,7 @@ export function Hero({ stationCount, listenerCount, djCount }: HeroProps) {
 
       {/* Title */}
       <h1
-        className="font-mono text-5xl font-extrabold uppercase tracking-widest"
+        className="font-sans text-5xl font-extrabold uppercase tracking-widest"
         style={{
           background: "linear-gradient(135deg, #ff2d78 0%, #ff6b9d 100%)",
           WebkitBackgroundClip: "text",

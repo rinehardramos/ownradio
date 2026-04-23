@@ -19,7 +19,7 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
   return (
     <section className="w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stations.map((station) => {
           const isPlaceholder = !station.isLive && !station.streamUrl;
 
@@ -31,9 +31,9 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
               <img
                 src={getStationPlaceholder(station.genre)}
                 alt={station.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5) saturate(1.2)' }}
               />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,15,26,0.9) 0%, rgba(0,0,0,0.1) 60%)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,15,26,0.95) 0%, rgba(0,0,0,0.1) 60%)' }} />
 
               {/* LIVE or COMING SOON badge */}
               <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
@@ -45,8 +45,16 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
 
               {/* Station info at bottom */}
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '2px' }}>{station.genre}</div>
                 <div style={{ fontSize: '15px', fontWeight: 700 }}>{station.name}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{station.genre}</div>
+                {station.dj && (
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>DJ {station.dj.name}</div>
+                )}
+                {station.currentSong && (
+                  <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    ♪ {station.currentSong.title} — {station.currentSong.artist}
+                  </div>
+                )}
               </div>
             </div>
           );
