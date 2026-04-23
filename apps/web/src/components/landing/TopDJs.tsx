@@ -20,8 +20,8 @@ export function TopDJs({ djs }: TopDJsProps) {
       <h2 className="text-lg font-bold text-white mb-4">Top DJs</h2>
       <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '8px' }} className="scrollbar-hide">
         {djs.map((dj) => (
-          <div key={dj.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-            <div style={{ position: 'relative' }}>
+          <div key={dj.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0, cursor: 'pointer' }}>
+            <div className="avatar-glow" style={{ position: 'relative' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-elevated)', border: '2px solid var(--border-medium)', overflow: 'hidden' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={dj.avatarUrl || DJ_PLACEHOLDER} alt={dj.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

@@ -25,7 +25,8 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
 
           const card = (
             <div
-              style={{ position: 'relative', borderRadius: 'var(--radius-lg)', overflow: 'hidden', aspectRatio: '16/9', cursor: isPlaceholder ? 'default' : 'pointer' }}
+              className={isPlaceholder ? undefined : 'card-hover'}
+              style={{ position: 'relative', borderRadius: 'var(--radius-lg)', overflow: 'hidden', aspectRatio: '16/9', cursor: isPlaceholder ? 'default' : undefined }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -35,10 +36,24 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
               />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,15,26,0.95) 0%, rgba(0,0,0,0.1) 60%)' }} />
 
+              {/* Play button overlay — revealed on hover */}
+              {!isPlaceholder && (
+                <div className="card-play-btn">
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.3)' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                </div>
+              )}
+
               {/* LIVE or COMING SOON badge */}
               <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
                 {station.isLive
-                  ? <span style={{ background: 'var(--pink)', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: '#fff' }}>LIVE</span>
+                  ? (
+                    <span style={{ background: 'var(--pink)', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 700, color: '#fff', display: 'inline-flex', alignItems: 'center' }}>
+                      <span className="dot-live" style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', marginRight: '5px' }} />
+                      LIVE
+                    </span>
+                  )
                   : <span style={{ background: 'rgba(0,0,0,0.5)', padding: '3px 10px', borderRadius: 'var(--radius-full)', fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)' }}>COMING SOON</span>
                 }
               </div>

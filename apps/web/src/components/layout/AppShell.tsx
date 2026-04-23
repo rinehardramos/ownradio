@@ -49,14 +49,14 @@ export function AppShell({
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', background: 'var(--bg-primary)' }}>
       {/* Top Bar */}
       <div style={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
-        <button onClick={() => setSidebarOpen(o => !o)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '20px', cursor: 'pointer', padding: '4px' }}>&#9776;</button>
+        <button onClick={() => setSidebarOpen(o => !o)} className="btn-press" style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '20px', cursor: 'pointer', padding: '4px' }}>&#9776;</button>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {Array.from({ length: stationCount }, (_, i) => (
             <button key={i} onClick={() => onDotClick(i)}
               style={{ width: i === currentIndex ? '20px' : '8px', height: '8px', borderRadius: '4px', border: 'none', background: i === currentIndex ? 'var(--pink)' : 'var(--border-medium)', cursor: 'pointer', padding: 0, transition: 'all 300ms cubic-bezier(.4,0,.2,1)' }} />
           ))}
         </div>
-        <button onClick={() => setChatOpen(o => !o)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '20px', cursor: 'pointer', padding: '4px' }}>&#128172;</button>
+        <button onClick={() => setChatOpen(o => !o)} className="btn-press" style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '20px', cursor: 'pointer', padding: '4px' }}>&#128172;</button>
       </div>
 
       {/* Body */}

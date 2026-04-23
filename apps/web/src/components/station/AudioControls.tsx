@@ -118,6 +118,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         <button
           onClick={() => setVolume(volume - 0.1)}
           aria-label="Volume down"
+          className="btn-press"
           style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}
         >
           🔉
@@ -135,6 +136,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         <button
           onClick={() => setVolume(volume + 0.1)}
           aria-label="Volume up"
+          className="btn-press"
           style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}
         >
           🔊
@@ -142,6 +144,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         <button
           onClick={togglePlay}
           aria-label={isPlaying ? 'Pause' : 'Play'}
+          className="play-btn-glow"
           style={{
             width: '48px',
             height: '48px',

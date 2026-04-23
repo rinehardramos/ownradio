@@ -26,7 +26,7 @@ export function Sidebar({ stations, activeStationId, onStationClick }: SidebarPr
       </div>
       <nav style={{ padding: '8px' }}>
         {NAV_LINKS.map(({ href, label, icon }) => (
-          <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', fontWeight: 500, marginBottom: '2px' }}>
+          <Link key={href} href={href} className="nav-item" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', fontWeight: 500, marginBottom: '2px' }}>
             <span>{icon}</span><span>{label}</span>
           </Link>
         ))}
@@ -37,7 +37,7 @@ export function Sidebar({ stations, activeStationId, onStationClick }: SidebarPr
         {stations.map((station, index) => {
           const isActive = station.id === activeStationId;
           return (
-            <button key={station.id} onClick={() => onStationClick(index)}
+            <button key={station.id} onClick={() => onStationClick(index)} className="sidebar-station"
               style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: isActive ? 'rgba(255,45,120,0.12)' : 'transparent', cursor: 'pointer', textAlign: 'left' }}>
               <img src={station.artworkUrl || getStationPlaceholder(station.genre)} alt=""
                 style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }} />

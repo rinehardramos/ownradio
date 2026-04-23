@@ -28,7 +28,7 @@ export function BottomPlayerBar({ currentSong, station, isPlaying, volume, liste
       </div>
       {/* Center: play button */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-        <button onClick={onTogglePlay} style={{ width: '36px', height: '36px', borderRadius: '50%', border: 'none', background: '#fff', color: '#000', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button onClick={onTogglePlay} className="play-btn-glow" style={{ width: '36px', height: '36px', borderRadius: '50%', border: 'none', background: '#fff', color: '#000', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {isPlaying ? '⏸' : '▶'}
         </button>
       </div>

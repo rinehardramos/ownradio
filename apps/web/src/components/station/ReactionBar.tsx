@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { ReactionType } from '@ownradio/shared';
 
 const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
@@ -17,6 +18,7 @@ interface ReactionBarProps {
 
 export function ReactionBar({ activeReaction, onReact, orientation = 'vertical' }: ReactionBarProps) {
   const isVertical = orientation === 'vertical';
+  const [hoveredType, setHoveredType] = useState<ReactionType | null>(null);
   return (
     <div style={{ display: 'flex', flexDirection: isVertical ? 'column' : 'row', gap: '8px', padding: '8px' }}>
       {REACTIONS.map(({ type, emoji, label }) => {
@@ -27,6 +29,8 @@ export function ReactionBar({ activeReaction, onReact, orientation = 'vertical' 
             onClick={() => onReact(type)}
             aria-label={label}
             aria-pressed={isActive}
+            onMouseEnter={() => setHoveredType(type)}
+            onMouseLeave={(e) => { setHoveredType(null); (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
             style={{
               width: '48px',
               height: '48px',
@@ -36,16 +40,21 @@ export function ReactionBar({ activeReaction, onReact, orientation = 'vertical' 
               fontSize: '22px',
               borderRadius: 'var(--radius-md)',
               border: isActive
-                ? '1.5px solid rgba(255,45,120,0.4)'
-                : '1.5px solid var(--border-subtle)',
-              background: isActive ? 'rgba(255,45,120,0.15)' : 'rgba(0,0,0,0.2)',
+                ? '1.5px solid rgba(255,45,120,0.5)'
+                : hoveredType === type
+                  ? '1.5px solid rgba(255,255,255,0.15)'
+                  : '1.5px solid transparent',
+              background: isActive
+                ? 'rgba(255,45,120,0.12)'
+                : hoveredType === type
+                  ? 'rgba(255,255,255,0.05)'
+                  : 'transparent',
               boxShadow: isActive ? '0 0 14px rgba(255,45,120,0.25)' : 'none',
               cursor: 'pointer',
               transition: 'all 150ms cubic-bezier(.4,0,.2,1)',
             }}
             onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.85)'; }}
             onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
           >
             {emoji}
           </button>
