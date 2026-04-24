@@ -37,6 +37,7 @@ export async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const res = await fetch(`${getBaseUrl()}${path}`, {
+    cache: "no-store",
     ...options,
     headers: {
       ...buildHeaders(),
