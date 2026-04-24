@@ -37,7 +37,7 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
         await prisma.station.update({
           where: { slug },
           data: { streamUrl: payload.streamUrl, isLive: true },
-        }).catch((err) => {
+        }).catch((err: unknown) => {
           app.log.warn({ err, slug }, "[webhook] failed to persist stream_url");
         });
       }
