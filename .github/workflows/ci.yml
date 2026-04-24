@@ -31,5 +31,8 @@ jobs:
       - name: Lint
         run: npx turbo lint
 
+      - name: Build
+        run: npx turbo build
+
       - name: Test
         run: npx turbo test
