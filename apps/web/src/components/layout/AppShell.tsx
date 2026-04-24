@@ -32,8 +32,8 @@ export function AppShell({
   currentSong, currentStation, isPlaying, volume, listenerCount, onTogglePlay, onVolumeChange,
   children, chatContent,
 }: AppShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [chatOpen, setChatOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
