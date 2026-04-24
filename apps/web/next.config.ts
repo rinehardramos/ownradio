@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-// Fail the build loudly if required env vars are missing in production/CI.
-if (process.env.NODE_ENV === "production" || process.env.CI) {
+// Fail the build loudly if required env vars are missing in Vercel production.
+// VERCEL_ENV is set automatically by Vercel: 'production' | 'preview' | 'development'.
+// We skip this check in preview builds, CI runners, and local dev — only enforce in prod.
+if (process.env.VERCEL_ENV === "production") {
   const required = ["NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_WS_URL"];
   const missing = required.filter((k) => !process.env[k]);
   if (missing.length) {
