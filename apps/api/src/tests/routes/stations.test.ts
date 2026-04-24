@@ -8,6 +8,8 @@ vi.mock("../../db/client.js", () => ({
     station: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
     },
     song: {
       findMany: vi.fn(),
@@ -37,6 +39,98 @@ const MOCK_STATION = {
     avatarUrl: null,
   },
 };
+
+const NEW_STATION = {
+  id: "st-new",
+  name: "Metro Manila Mix",
+  slug: "metro-manila-mix",
+  description: "Metro Manila's Freshest Mix",
+  streamUrl: "https://cdn.example.com/metro/playlist.m3u8",
+  metadataUrl: null,
+  genre: "OPM",
+  artworkUrl: null,
+  isLive: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  dj: { id: "dj-new", stationId: "st-new", name: "Camille", bio: "Taglish DJ", avatarUrl: null },
+};
+
+describe("POST /stations", () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  beforeAll(async () => {
+    app = await buildApp();
+    await app.ready();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  afterEach(() => vi.clearAllMocks());
+
+  it("creates a new station and returns 201", async () => {
+    vi.mocked(prisma.station.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.station.create).mockResolvedValue(NEW_STATION as any);
+
+    const res = await supertest(app.server)
+      .post("/stations")
+      .set("x-playgen-secret", "")
+      .send({
+        slug: "metro-manila-mix",
+        name: "Metro Manila Mix",
+        description: "Metro Manila's Freshest Mix",
+        genre: "OPM",
+        streamUrl: "https://cdn.example.com/metro/playlist.m3u8",
+        dj: { name: "Camille", bio: "Taglish DJ" },
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.slug).toBe("metro-manila-mix");
+    expect(res.body.dj.name).toBe("Camille");
+  });
+
+  it("upserts (200) when station slug already exists", async () => {
+    vi.mocked(prisma.station.findUnique).mockResolvedValue(NEW_STATION as any);
+    vi.mocked(prisma.station.update).mockResolvedValue({
+      ...NEW_STATION,
+      streamUrl: "https://cdn.example.com/metro/v2.m3u8",
+    } as any);
+
+    const res = await supertest(app.server)
+      .post("/stations")
+      .set("x-playgen-secret", "")
+      .send({
+        slug: "metro-manila-mix",
+        name: "Metro Manila Mix",
+        streamUrl: "https://cdn.example.com/metro/v2.m3u8",
+      });
+
+    expect(res.status).toBe(200);
+    expect(prisma.station.update).toHaveBeenCalledOnce();
+    expect(prisma.station.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when slug is missing", async () => {
+    const res = await supertest(app.server)
+      .post("/stations")
+      .set("x-playgen-secret", "")
+      .send({ name: "No Slug Station" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it("returns 400 when name is missing", async () => {
+    const res = await supertest(app.server)
+      .post("/stations")
+      .set("x-playgen-secret", "")
+      .send({ slug: "no-name" });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+});
 
 describe("GET /stations", () => {
   let app: Awaited<ReturnType<typeof buildApp>>;

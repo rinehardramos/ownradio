@@ -59,6 +59,16 @@ const STATIONS = [
     djName: "DJ Alex",
     djBio: "An AI DJ powered by PlayGen. Curates OPM hits and talks between songs like a real radio host.",
   },
+  {
+    name: "Metro Manila Mix",
+    slug: "metro-manila-mix",
+    description: "Metro Manila's freshest mix — Taglish banter, OPM and international hits.",
+    stream: "",
+    metadata: "",
+    genre: "OPM",
+    djName: "Camille",
+    djBio: "Energetic Taglish DJ born and raised in QC. Loves OPM, EDSA stories, and good tapsilog.",
+  },
 ];
 
 async function main() {
