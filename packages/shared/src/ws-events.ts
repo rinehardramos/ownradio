@@ -11,12 +11,16 @@ export interface StreamControlPayload {
   action: 'url_change' | 'stop' | 'resume';
   /** New stream URL when action is 'url_change' */
   streamUrl?: string;
+  /** Slug of the station this event targets — used client-side to filter on the shared socket */
+  stationSlug: string;
 }
 
 export interface DjSwitchPayload {
   djId: string;
   name: string;
   voiceStyle?: string;
+  /** Slug of the station this event targets — used client-side to filter on the shared socket */
+  stationSlug: string;
 }
 
 export interface ServerEvents {

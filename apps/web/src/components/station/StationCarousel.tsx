@@ -156,7 +156,7 @@ function StationCarouselInner({
           <button
             onClick={goPrev}
             aria-label="Previous station"
-            className="absolute left-0 top-0 h-full w-[20%] z-10 flex items-center justify-start pl-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
+            className="absolute left-0 top-1/4 h-1/2 w-16 z-10 flex items-center justify-start pl-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
           >
             <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
               ←
@@ -169,7 +169,7 @@ function StationCarouselInner({
           <button
             onClick={goNext}
             aria-label="Next station"
-            className="absolute right-0 top-0 h-full w-[20%] z-10 flex items-center justify-end pr-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
+            className="absolute right-0 top-1/4 h-1/2 w-16 z-10 flex items-center justify-end pr-2 opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity"
           >
             <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white">
               →
