@@ -83,6 +83,9 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     }
 
     function onStreamControl(data: StreamControlPayload) {
+      // Guard: ignore events not intended for this station (shared singleton socket)
+      if (data.stationSlug !== station.slug) return;
+
       if (data.action === 'url_change' && data.streamUrl) {
         setStreamUrl(data.streamUrl);
         setStreamActive(true);
@@ -94,6 +97,9 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     }
 
     function onDjSwitch(data: DjSwitchPayload) {
+      // Guard: ignore events not intended for this station (shared singleton socket)
+      if (data.stationSlug !== station.slug) return;
+
       setActiveDj(data);
     }
 

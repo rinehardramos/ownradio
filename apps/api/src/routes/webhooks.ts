@@ -37,12 +37,12 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
         await prisma.station.update({
           where: { slug },
           data: { streamUrl: payload.streamUrl, isLive: true },
-        }).catch((err) => {
+        }).catch((err: unknown) => {
           app.log.warn({ err, slug }, "[webhook] failed to persist stream_url");
         });
       }
 
-      getIo().to(`station:${slug}`).emit("stream_control", payload);
+      getIo().to(`station:${slug}`).emit("stream_control", { ...payload, stationSlug: slug });
       return { ok: true };
     });
 
@@ -59,7 +59,7 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
       if (!payload?.djId || !payload?.name) {
         return reply.status(400).send({ error: "djId and name required" });
       }
-      getIo().to(`station:${slug}`).emit("dj_switch", payload);
+      getIo().to(`station:${slug}`).emit("dj_switch", { ...payload, stationSlug: slug });
       return { ok: true };
     });
   };
