@@ -4,9 +4,18 @@ import { getStationPlaceholder } from "@/lib/placeholders";
 
 interface FeaturedStationsProps {
   stations: StationWithDJ[];
+  stationCount?: number;
+  listenerCount?: number;
+  djCount?: number;
+  liveCount?: number;
 }
 
-export function FeaturedStations({ stations }: FeaturedStationsProps) {
+function fmt(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return String(n);
+}
+
+export function FeaturedStations({ stations, stationCount, listenerCount, djCount, liveCount }: FeaturedStationsProps) {
   if (stations.length === 0) {
     return (
       <section className="w-full py-8">
@@ -19,6 +28,29 @@ export function FeaturedStations({ stations }: FeaturedStationsProps) {
   return (
     <section className="slide-up w-full py-8">
       <h2 className="text-lg font-bold text-white mb-4">Featured Stations</h2>
+      {stationCount != null && (
+        <div className="mb-6 flex justify-center gap-8 flex-wrap">
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-bold" style={{ color: "var(--pink)" }}>{stationCount}</span>
+            <span className="mt-1 text-xs uppercase tracking-wider text-white/50">Stations</span>
+          </div>
+          <div className="w-px bg-white/10" />
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-bold" style={{ color: "#22c55e" }}>{liveCount}</span>
+            <span className="mt-1 text-xs uppercase tracking-wider text-white/50">Live Now</span>
+          </div>
+          <div className="w-px bg-white/10" />
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-bold" style={{ color: "var(--pink)" }}>{fmt(listenerCount ?? 0)}</span>
+            <span className="mt-1 text-xs uppercase tracking-wider text-white/50">Listeners</span>
+          </div>
+          <div className="w-px bg-white/10" />
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-bold" style={{ color: "var(--pink)" }}>{djCount}</span>
+            <span className="mt-1 text-xs uppercase tracking-wider text-white/50">DJs</span>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stations.map((station) => {
           const isPlaceholder = !station.isLive && !station.streamUrl;
