@@ -51,7 +51,12 @@ export function StationCard({
   const heroImg = station.artworkUrl || getStationPlaceholder(station.genre);
   const djName = activeDj?.name ?? station.dj?.name ?? null;
 
-  const effectiveStreamUrl = streamUrl ?? station.streamUrl;
+  // "mock" is the sentinel for placeholder-only stations with no real stream.
+  // Empty string means coming soon. Both should not attempt HLS playback.
+  const rawStreamUrl = streamUrl ?? station.streamUrl;
+  const isPlaceholderStream =
+    !rawStreamUrl || rawStreamUrl === "mock" || rawStreamUrl.startsWith("https://placeholder.example");
+  const effectiveStreamUrl = isPlaceholderStream ? null : rawStreamUrl;
 
   return (
     <div style={{ position: "relative", width: "100%", minHeight: "100%" }}>
@@ -249,14 +254,29 @@ export function StationCard({
         />
 
         {/* Audio controls */}
-        {effectiveStreamUrl && (
+        {effectiveStreamUrl ? (
           <AudioControls
             ref={resolvedRef}
             streamUrl={effectiveStreamUrl}
-            isActive={isActive}
             onPlayStateChange={onPlayStateChange}
             onVolumeChange={onVolumeChange}
           />
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "12px 16px",
+              background: "var(--bg-card)",
+              borderRadius: "var(--radius-lg)",
+              color: "rgba(255,255,255,0.35)",
+              fontSize: "13px",
+            }}
+          >
+            <span style={{ fontSize: "18px" }}>🎙️</span>
+            <span>Coming Soon — stream not yet available</span>
+          </div>
         )}
 
         {/* DJ card */}
