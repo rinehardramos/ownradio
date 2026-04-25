@@ -75,6 +75,9 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     socket.emit("join_station", { slug: station.slug });
 
     function onNowPlaying(song: Song) {
+      // Guard: the singleton socket receives events for all stations.
+      // Only accept songs that belong to the station this hook instance manages.
+      if (song.stationId !== station.id) return;
       setCurrentSong(song);
       setActiveReaction(null); // reset on song change
     }
