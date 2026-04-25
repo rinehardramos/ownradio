@@ -277,40 +277,46 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
           </div>
         )}
 
-        {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px' }}>
+        {/* Controls: 3-column grid — volume cluster | play | spacer */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '12px 16px' }}>
           <audio
             ref={audioRef}
             preload="none"
             onPlay={() => { setIsPlaying(true); onPlayStateChange?.(true); }}
             onPause={() => { setIsPlaying(false); onPlayStateChange?.(false); }}
           />
-          <button
-            onClick={() => setVolume(volume - 0.1)}
-            aria-label="Volume down"
-            className="btn-press"
-            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}
-          >
-            🔉
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            aria-label="Volume"
-            style={{ flex: 1, background: volBg }}
-          />
-          <button
-            onClick={() => setVolume(volume + 0.1)}
-            aria-label="Volume up"
-            className="btn-press"
-            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px' }}
-          >
-            🔊
-          </button>
+
+          {/* Volume cluster — left column */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              onClick={() => setVolume(volume - 0.1)}
+              aria-label="Volume down"
+              className="btn-press"
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: 0 }}
+            >
+              🔉
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              aria-label="Volume"
+              style={{ width: '72px', height: '3px', background: volBg, cursor: 'pointer' }}
+            />
+            <button
+              onClick={() => setVolume(volume + 0.1)}
+              aria-label="Volume up"
+              className="btn-press"
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: 0 }}
+            >
+              🔊
+            </button>
+          </div>
+
+          {/* Play button — center column */}
           <button
             onClick={togglePlay}
             aria-label={isPlaying ? 'Pause' : 'Play'}
@@ -341,6 +347,9 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
               </svg>
             )}
           </button>
+
+          {/* Right spacer — mirrors left column so play stays centered */}
+          <div />
         </div>
       </div>
     );
