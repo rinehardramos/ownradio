@@ -8,7 +8,7 @@ export const OWNRADIO_FALLBACK: StationWithDJ = {
   slug: OWNRADIO_SLUG,
   description: "AI-powered radio by PlayGen",
   streamUrl:
-    "https://api.playgen.site/stream/8edb1148-3423-43c7-9ffb-065aabdb3dfd/playlist.m3u8",
+    "https://api.playgen.site/stream/324135e0-151a-4cb7-bff3-bca7a099a68c/playlist.m3u8",
   metadataUrl: "",
   genre: "OPM",
   artworkUrl: "",
