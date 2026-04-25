@@ -253,8 +253,8 @@ export function StationCard({
           orientation="horizontal"
         />
 
-        {/* Audio controls */}
-        {effectiveStreamUrl ? (
+        {/* Audio controls — only render for active card to stop playback on swipe */}
+        {isActive && effectiveStreamUrl ? (
           <AudioControls
             ref={resolvedRef}
             streamUrl={effectiveStreamUrl}
