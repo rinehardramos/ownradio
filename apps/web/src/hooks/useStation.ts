@@ -50,6 +50,13 @@ export function useStation(station: StationWithDJ): UseStationReturn {
   const [streamActive, setStreamActive] = useState<boolean>(true);
   const [activeDj, setActiveDj] = useState<DjSwitchPayload | null>(null);
 
+  // Reset stream URL when station changes (useState initial value only applies on mount)
+  useEffect(() => {
+    setStreamUrl(station.streamUrl ?? null);
+    setStreamActive(true);
+    setActiveDj(null);
+  }, [station.slug, station.streamUrl]);
+
   // Keep a ref to currentSong so event handlers always see the latest value
   const currentSongRef = useRef<Song | null>(currentSong);
   useEffect(() => {
