@@ -28,7 +28,13 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
       const audio = audioRef.current;
       if (!audio) return;
 
-      // Clean up previous HLS instance
+      // Stop current playback and clean up previous HLS instance
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      setIsPlaying(false);
+      onPlayStateChange?.(false);
+
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
