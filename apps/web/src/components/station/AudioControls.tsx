@@ -45,7 +45,16 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
       const isHls = streamUrl.endsWith('.m3u8');
 
       if (isHls && Hls.isSupported()) {
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          // Large buffer for full-song MP3 segments (up to ~5 min / 10MB each)
+          maxBufferLength: 600,
+          maxMaxBufferLength: 600,
+          maxBufferSize: 60 * 1000 * 1000, // 60MB
+          fragLoadingTimeOut: 30000,
+          fragLoadingMaxRetry: 3,
+        });
         hls.loadSource(streamUrl);
         hls.attachMedia(audio);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
