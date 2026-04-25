@@ -44,18 +44,24 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     station.listenerCount ?? 0
   );
   const [activeReaction, setActiveReaction] = useState<ReactionType | null>(null);
-  const [streamUrl, setStreamUrl] = useState<string | null>(
-    station.streamUrl ?? null
-  );
+  // streamUrlOverride is set only by WebSocket stream_control events;
+  // otherwise we use the station prop's streamUrl directly.
+  const [streamUrlOverride, setStreamUrlOverride] = useState<string | null>(null);
   const [streamActive, setStreamActive] = useState<boolean>(true);
   const [activeDj, setActiveDj] = useState<DjSwitchPayload | null>(null);
+  const [activeSlug, setActiveSlug] = useState(station.slug);
 
-  // Reset stream URL when station changes (useState initial value only applies on mount)
-  useEffect(() => {
-    setStreamUrl(station.streamUrl ?? null);
+  // Derive effective stream URL: WebSocket override (if for this station) > station prop
+  const streamUrl = streamUrlOverride ?? station.streamUrl ?? null;
+
+  // Reset override when station changes — uses state comparison instead of refs
+  // to comply with React strict mode (no ref access during render).
+  if (activeSlug !== station.slug) {
+    setActiveSlug(station.slug);
+    setStreamUrlOverride(null);
     setStreamActive(true);
     setActiveDj(null);
-  }, [station.slug, station.streamUrl]);
+  }
 
   // Keep a ref to currentSong so event handlers always see the latest value
   const currentSongRef = useRef<Song | null>(currentSong);
@@ -94,7 +100,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
       if (data.stationSlug !== station.slug) return;
 
       if (data.action === 'url_change' && data.streamUrl) {
-        setStreamUrl(data.streamUrl);
+        setStreamUrlOverride(data.streamUrl);
         setStreamActive(true);
       } else if (data.action === 'stop') {
         setStreamActive(false);
