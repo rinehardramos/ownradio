@@ -116,6 +116,7 @@ export function StationCard({
           </span>
           {station.isLive && (
             <span
+              className="live-badge"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -132,6 +133,7 @@ export function StationCard({
               }}
             >
               <span
+                className="dot-live"
                 style={{
                   width: "6px",
                   height: "6px",
