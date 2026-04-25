@@ -9,11 +9,17 @@ interface SidebarProps {
   onStationClick: (index: number) => void;
 }
 
+const NavIcon = ({ d, size = 18 }: { d: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+
 const NAV_LINKS = [
-  { href: '/',        label: 'Home',    icon: '🏠' },
-  { href: '/browse',  label: 'Browse',  icon: '🔍' },
-  { href: '/library', label: 'Library', icon: '📚' },
-  { href: '/profile', label: 'Profile', icon: '👤' },
+  { href: '/',        label: 'Home',    icon: 'M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z' },
+  { href: '/browse',  label: 'Browse',  icon: 'M12 2a7 7 0 017 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 017-7zm0 4a3 3 0 100 6 3 3 0 000-6z' },
+  { href: '/library', label: 'Library', icon: 'M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 014 17V5a2 2 0 012-2h14v14H6.5A2.5 2.5 0 004 19.5z' },
+  { href: '/profile', label: 'Profile', icon: 'M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z' },
 ];
 
 export function Sidebar({ stations, activeStationId, onStationClick }: SidebarProps) {
@@ -27,7 +33,7 @@ export function Sidebar({ stations, activeStationId, onStationClick }: SidebarPr
       <nav style={{ padding: '8px' }}>
         {NAV_LINKS.map(({ href, label, icon }) => (
           <Link key={href} href={href} className="nav-item" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '14px', fontWeight: 500, marginBottom: '2px' }}>
-            <span>{icon}</span><span>{label}</span>
+            <NavIcon d={icon} /><span>{label}</span>
           </Link>
         ))}
       </nav>
