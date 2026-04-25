@@ -37,6 +37,7 @@ function StationCarouselInner({
 
   const {
     currentSong,
+    songResolved,
     activeReaction,
     listenerCount,
     messages,
@@ -139,6 +140,7 @@ function StationCarouselInner({
               station={station}
               isActive={i === currentIndex}
               currentSong={i === currentIndex ? currentSong : null}
+              songResolved={i === currentIndex ? songResolved : true}
               activeReaction={i === currentIndex ? activeReaction : null}
               streamUrl={i === currentIndex ? (streamUrl ?? null) : null}
               activeDj={i === currentIndex ? activeDj : null}

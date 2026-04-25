@@ -14,6 +14,8 @@ import { getSocket } from "../lib/socket";
 
 interface UseStationReturn {
   currentSong: Song | null;
+  /** True once the first now_playing event has been received or 5 s have elapsed */
+  songResolved: boolean;
   reactions: ReactionCounts;
   messages: ChatMessage[];
   listenerCount: number;
@@ -50,6 +52,9 @@ export function useStation(station: StationWithDJ): UseStationReturn {
   const [streamActive, setStreamActive] = useState<boolean>(true);
   const [activeDj, setActiveDj] = useState<DjSwitchPayload | null>(null);
   const [activeSlug, setActiveSlug] = useState(station.slug);
+  const [songResolved, setSongResolved] = useState<boolean>(
+    station.currentSong != null // already resolved if SSR provided a song
+  );
 
   // Derive effective stream URL: WebSocket override (if for this station) > station prop
   const streamUrl = streamUrlOverride ?? station.streamUrl ?? null;
@@ -61,6 +66,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     setStreamUrlOverride(null);
     setStreamActive(true);
     setActiveDj(null);
+    setSongResolved(station.currentSong != null);
   }
 
   // Keep a ref to currentSong so event handlers always see the latest value
@@ -74,11 +80,15 @@ export function useStation(station: StationWithDJ): UseStationReturn {
 
     socket.emit("join_station", { slug: station.slug });
 
+    // Resolve song loading after 5 s if no now_playing event fires
+    const resolveTimer = setTimeout(() => setSongResolved(true), 5000);
+
     function onNowPlaying(song: Song) {
       // Guard: the singleton socket receives events for all stations.
       // Only accept songs that belong to the station this hook instance manages.
       if (song.stationId !== station.id) return;
       setCurrentSong(song);
+      setSongResolved(true);
       setActiveReaction(null); // reset on song change
     }
 
@@ -127,6 +137,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     socket.on("dj_switch", onDjSwitch);
 
     return () => {
+      clearTimeout(resolveTimer);
       socket.emit("leave_station");
       socket.off("now_playing", onNowPlaying);
       socket.off("reaction_update", onReactionUpdate);
@@ -166,6 +177,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
 
   return {
     currentSong,
+    songResolved,
     reactions,
     messages,
     listenerCount,

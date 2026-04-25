@@ -18,6 +18,7 @@ interface StationCardProps {
   station: StationWithDJ;
   isActive: boolean;
   currentSong: Song | null;
+  songResolved?: boolean;
   activeReaction: ReactionType | null;
   streamUrl: string | null;
   activeDj: DjSwitchPayload | null;
@@ -34,6 +35,7 @@ export function StationCard({
   station,
   isActive,
   currentSong,
+  songResolved = true,
   activeReaction,
   streamUrl,
   activeDj,
@@ -205,7 +207,11 @@ export function StationCard({
                 whiteSpace: "nowrap",
               }}
             >
-              {currentSong ? currentSong.title : "Loading track info..."}
+              {currentSong
+                ? currentSong.title
+                : songResolved
+                  ? "No track playing"
+                  : "Loading track info..."}
             </p>
             <p
               style={{
