@@ -11,15 +11,15 @@ export interface AudioControlsHandle {
 
 interface AudioControlsProps {
   streamUrl: string;
-  isActive?: boolean;
   onPlayStateChange?: (playing: boolean) => void;
   onVolumeChange?: (volume: number) => void;
 }
 
 export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>(
-  function AudioControls({ streamUrl, isActive, onPlayStateChange, onVolumeChange }, ref) {
+  function AudioControls({ streamUrl, onPlayStateChange, onVolumeChange }, ref) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolumeState] = useState(0.8);
+    const [streamError, setStreamError] = useState<string | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const hlsRef = useRef<Hls | null>(null);
 
@@ -34,6 +34,8 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         hlsRef.current = null;
       }
 
+      setStreamError(null);
+
       const isHls = streamUrl.endsWith('.m3u8');
 
       if (isHls && Hls.isSupported()) {
@@ -45,6 +47,15 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         });
         hls.on(Hls.Events.ERROR, (_event, data) => {
           console.error('[HLS] Error:', data.type, data.details);
+          if (data.fatal) {
+            if (data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR ||
+                data.details === Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT ||
+                data.details === Hls.ErrorDetails.MANIFEST_PARSING_ERROR) {
+              setStreamError('Stream unavailable');
+              setIsPlaying(false);
+              onPlayStateChange?.(false);
+            }
+          }
         });
         hlsRef.current = hls;
       } else if (isHls && audio.canPlayType('application/vnd.apple.mpegurl')) {
@@ -61,23 +72,10 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
           hlsRef.current = null;
         }
       };
-    }, [streamUrl]);
+    }, [streamUrl, onPlayStateChange]);
 
-    // Respond to external isActive prop (auto-play/pause)
-    useEffect(() => {
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      if (isActive) {
-        audio.play().catch((err) => {
-          console.log('Audio play failed (stream may be unavailable):', err);
-          setIsPlaying(false);
-          onPlayStateChange?.(false);
-        });
-      } else if (isActive === false) {
-        audio.pause();
-      }
-    }, [isActive, onPlayStateChange]);
+    // NOTE: No isActive-triggered autoplay — audio only plays on explicit user click
+    // to comply with browser autoplay policies (NotAllowedError).
 
     const togglePlay = useCallback(() => {
       const audio = audioRef.current;
@@ -90,7 +88,9 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         audio.play().then(() => {
           setIsPlaying(true);
           onPlayStateChange?.(true);
-        }).catch(() => {});
+        }).catch((err) => {
+          console.warn('[Audio] play() rejected:', err);
+        });
       }
     }, [isPlaying, onPlayStateChange]);
 
@@ -102,6 +102,15 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
     }, [onVolumeChange]);
 
     useImperativeHandle(ref, () => ({ isPlaying, volume, togglePlay, setVolume }), [isPlaying, volume, togglePlay, setVolume]);
+
+    if (streamError) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
+          <span style={{ fontSize: '18px' }}>📡</span>
+          <span>{streamError}</span>
+        </div>
+      );
+    }
 
     const pct = Math.round(volume * 100);
     const sliderBg = `linear-gradient(to right, var(--pink) 0%, var(--pink) ${pct}%, var(--border-medium) ${pct}%, var(--border-medium) 100%)`;
