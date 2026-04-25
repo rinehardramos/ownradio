@@ -258,6 +258,7 @@ export function StationCard({
           <AudioControls
             ref={resolvedRef}
             streamUrl={effectiveStreamUrl}
+            stationSlug={station.slug}
             onPlayStateChange={onPlayStateChange}
             onVolumeChange={onVolumeChange}
           />
