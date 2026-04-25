@@ -12,6 +12,7 @@ export interface AudioControlsHandle {
 interface AudioControlsProps {
   streamUrl: string;
   stationSlug?: string;
+  autoPlay?: boolean;
   onPlayStateChange?: (playing: boolean) => void;
   onVolumeChange?: (volume: number) => void;
 }
@@ -65,7 +66,7 @@ function formatTime(seconds: number): string {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>(
-  function AudioControls({ streamUrl, stationSlug, onPlayStateChange, onVolumeChange }, ref) {
+  function AudioControls({ streamUrl, stationSlug, autoPlay = false, onPlayStateChange, onVolumeChange }, ref) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolumeState] = useState(0.8);
     const [streamError, setStreamError] = useState<string | null>(null);
@@ -126,6 +127,12 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
             audio.currentTime = saved;
             resumedRef.current = true;
           }
+          // Auto-play if user was already listening before navigating
+          if (autoPlay) {
+            audio.play().catch((err) => {
+              console.warn('[Audio] auto-play rejected (browser policy):', err);
+            });
+          }
         });
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (data.fatal) {
@@ -147,9 +154,21 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
             audio.currentTime = saved;
             resumedRef.current = true;
           }
+          if (autoPlay) {
+            audio.play().catch((err) => {
+              console.warn('[Audio] auto-play rejected (browser policy):', err);
+            });
+          }
         }, { once: true });
       } else {
         audio.src = streamUrl;
+        if (autoPlay) {
+          audio.addEventListener('canplay', () => {
+            audio.play().catch((err) => {
+              console.warn('[Audio] auto-play rejected (browser policy):', err);
+            });
+          }, { once: true });
+        }
       }
 
       // Save position every 5 seconds during playback
@@ -174,7 +193,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         }
       };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [streamUrl]);
+    }, [streamUrl, autoPlay]);
 
     // Track currentTime and duration for progress bar
     useEffect(() => {

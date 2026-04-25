@@ -33,6 +33,10 @@ function StationCarouselInner({
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
 
+  // Track user play intent to drive auto-play on station change
+  const [userHasPlayed, setUserHasPlayed] = useState(false);
+  const [userExplicitlyPaused, setUserExplicitlyPaused] = useState(false);
+
   const { user } = useAuth();
 
   const {
@@ -98,7 +102,15 @@ function StationCarouselInner({
       isPlaying={isPlaying}
       volume={volume}
       listenerCount={listenerCount}
-      onTogglePlay={() => audioRef.current?.togglePlay()}
+      onTogglePlay={() => {
+        if (isPlaying) {
+          setUserExplicitlyPaused(true);
+        } else {
+          setUserHasPlayed(true);
+          setUserExplicitlyPaused(false);
+        }
+        audioRef.current?.togglePlay();
+      }}
       onVolumeChange={(v) => {
         setVolume(v);
         audioRef.current?.setVolume(v);
@@ -141,6 +153,7 @@ function StationCarouselInner({
               isActive={i === currentIndex}
               currentSong={i === currentIndex ? currentSong : null}
               songResolved={i === currentIndex ? songResolved : true}
+              autoPlay={i === currentIndex && userHasPlayed && !userExplicitlyPaused}
               activeReaction={i === currentIndex ? activeReaction : null}
               streamUrl={i === currentIndex ? (streamUrl ?? null) : null}
               activeDj={i === currentIndex ? activeDj : null}

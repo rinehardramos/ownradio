@@ -19,6 +19,7 @@ interface StationCardProps {
   isActive: boolean;
   currentSong: Song | null;
   songResolved?: boolean;
+  autoPlay?: boolean;
   activeReaction: ReactionType | null;
   streamUrl: string | null;
   activeDj: DjSwitchPayload | null;
@@ -36,6 +37,7 @@ export function StationCard({
   isActive,
   currentSong,
   songResolved = true,
+  autoPlay = false,
   activeReaction,
   streamUrl,
   activeDj,
@@ -267,6 +269,7 @@ export function StationCard({
             ref={resolvedRef}
             streamUrl={effectiveStreamUrl}
             stationSlug={station.slug}
+            autoPlay={autoPlay}
             onPlayStateChange={onPlayStateChange}
             onVolumeChange={onVolumeChange}
           />
