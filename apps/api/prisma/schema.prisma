@@ -23,6 +23,7 @@ model Station {
   songs        Song[]
   reactions    Reaction[]
   chatMessages ChatMessage[]
+  programs     Program[]
 
   @@map("stations")
 }
@@ -90,4 +91,22 @@ model ChatMessage {
   listener    Listener? @relation(fields: [listenerId], references: [id])
 
   @@map("chat_messages")
+}
+
+model Program {
+  id           String   @id @default(cuid())
+  stationId    String   @map("station_id")
+  djId         String?  @map("dj_id")
+  title        String
+  description  String?
+  recordedAt   DateTime @map("recorded_at")
+  durationSecs Int      @map("duration_secs")
+  playbackUrl  String   @map("playback_url")
+  coverArtUrl  String?  @map("cover_art_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  station Station @relation(fields: [stationId], references: [id])
+
+  @@unique([stationId, recordedAt])
+  @@map("programs")
 }
