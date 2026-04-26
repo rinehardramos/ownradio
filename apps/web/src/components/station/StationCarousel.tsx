@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import type { StationWithDJ } from "@ownradio/shared";
 import { useStation } from "@/hooks/useStation";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +39,7 @@ function StationCarouselInner({
   const [userExplicitlyPaused, setUserExplicitlyPaused] = useState(false);
 
   const { user } = useAuth();
+  const router = useRouter();
 
   const {
     currentSong,
@@ -60,7 +62,11 @@ function StationCarouselInner({
   }
 
   function goPrev() {
-    setCurrentIndex((i) => Math.max(i - 1, 0));
+    if (currentIndex === 0) {
+      router.push('/');
+      return;
+    }
+    setCurrentIndex((i) => i - 1);
   }
 
   function handleTouchStart(e: React.TouchEvent) {
@@ -132,6 +138,7 @@ function StationCarouselInner({
           width: "100%",
           height: "100%",
           overflow: "hidden",
+          touchAction: "pan-y",
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

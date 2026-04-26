@@ -10,7 +10,7 @@ interface LandingShellProps {
 }
 
 export function LandingShell({ stations, children }: LandingShellProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
   return (
