@@ -1,6 +1,5 @@
 import type { StationWithDJ } from "@ownradio/shared";
 import { apiFetch } from "@/lib/api";
-import { OWNRADIO_SLUG, mergeWithMocks } from "@/lib/mock-stations";
 import { HeroCoverFlow } from "@/components/landing/HeroCoverFlow";
 import { FeaturedStations } from "@/components/landing/FeaturedStations";
 import { TopDJs } from "@/components/landing/TopDJs";
@@ -17,13 +16,12 @@ async function fetchStations(): Promise<StationWithDJ[]> {
 }
 
 export default async function Home() {
-  const apiStations = await fetchStations();
-  const allStations = mergeWithMocks(apiStations);
+  const allStations = await fetchStations();
 
   const liveStations = allStations.filter((s) => s.isLive);
   const nonLiveStations = allStations.filter((s) => !s.isLive);
 
-  const ownradioIndex = Math.max(0, liveStations.findIndex((s) => s.slug === OWNRADIO_SLUG));
+  const ownradioIndex = Math.max(0, liveStations.findIndex((s) => s.slug === "ownradio"));
 
   const djs = allStations.flatMap((s) => (s.dj ? [s.dj] : []));
   const songs = allStations.flatMap((s) =>
