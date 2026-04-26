@@ -76,3 +76,47 @@ export interface Program {
   playbackUrl: string;
   coverArtUrl: string | null;
 }
+
+export type StationStatus = 'off_air' | 'on_air';
+
+export interface LanguageWeight {
+  code: string;
+  weight: number;
+}
+
+export interface OwnedStation extends Station {
+  status: StationStatus;
+  playgenStationId: string | null;
+  ownerId: string | null;
+  dj: OwnedDJ | null;
+}
+
+export interface OwnedDJ extends DJ {
+  playgenDjId: string | null;
+  localeCities: string[];
+  languages: LanguageWeight[];
+  personality: string | null;
+}
+
+export interface StationProgram {
+  id: string;
+  stationId: string;
+  playgenProgramId: string | null;
+  title: string;
+  description: string | null;
+  scheduledAt: string;
+  durationSecs: number;
+}
+
+export interface TtsVoice {
+  id: string;
+  name: string;
+  locale: string;
+}
+
+export interface ReadinessCheck {
+  station: boolean;
+  dj: boolean;
+  program: boolean;
+  status: StationStatus;
+}
