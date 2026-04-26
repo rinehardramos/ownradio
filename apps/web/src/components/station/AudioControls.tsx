@@ -27,6 +27,62 @@ function slugToTitle(slug: string): string {
     .join(' ');
 }
 
+interface SongSpan { start: number; artist: string; title: string }
+
+/** Parse an HLS manifest's levels to build a timeline of songs by cumulative segment duration.
+ *  Song boundaries are detected from EXT-X-MAP init segment URLs matching /audio/songs/{artist}/{title}/. */
+function buildSongTimeline(hls: Hls): SongSpan[] {
+  const details = hls.levels[0]?.details;
+  if (!details) return [];
+
+  const spans: SongSpan[] = [];
+  let cumulative = 0;
+  let currentArtist = '';
+  let currentTitle = '';
+
+  for (const frag of details.fragments) {
+    // Check init segment (EXT-X-MAP) for song info
+    const initUrl = frag.initSegment?.url;
+    if (initUrl) {
+      const m = initUrl.match(/\/audio\/songs\/([^/]+)\/([^/]+)\/init/);
+      if (m) {
+        const artist = slugToTitle(m[1]);
+        const title = slugToTitle(m[2]);
+        if (artist !== currentArtist || title !== currentTitle) {
+          currentArtist = artist;
+          currentTitle = title;
+          spans.push({ start: cumulative, artist, title });
+        }
+      }
+    }
+    // Also check fragment URL itself as fallback
+    if (!currentArtist) {
+      const fm = frag.url.match(/\/audio\/songs\/([^/]+)\/([^/]+)\//);
+      if (fm) {
+        const artist = slugToTitle(fm[1]);
+        const title = slugToTitle(fm[2]);
+        if (artist !== currentArtist || title !== currentTitle) {
+          currentArtist = artist;
+          currentTitle = title;
+          spans.push({ start: cumulative, artist, title });
+        }
+      }
+    }
+    cumulative += frag.duration;
+  }
+  return spans;
+}
+
+/** Find the song playing at a given time in the timeline */
+function songAtTime(timeline: SongSpan[], time: number): SongSpan | null {
+  if (timeline.length === 0) return null;
+  // Walk backwards to find the last span whose start <= time
+  for (let i = timeline.length - 1; i >= 0; i--) {
+    if (timeline[i].start <= time) return timeline[i];
+  }
+  return timeline[0];
+}
+
 // ── localStorage helpers for resume ─────────────────────────────────────────
 
 const POSITION_KEY_PREFIX = 'ownradio:pos:';
@@ -89,6 +145,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
     const autoPlayRef = useRef(autoPlay);
     const lastDetectedSongRef = useRef<string>('');
     const onSongDetectedRef = useRef(onSongDetected);
+    const songTimelineRef = useRef<SongSpan[]>([]);
 
     // Slug for localStorage key (fall back to URL-based key)
     const slug = stationSlug || streamUrl.replace(/[^a-z0-9]/gi, '-').slice(0, 40);
@@ -156,6 +213,8 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
             audio.currentTime = saved;
             resumedRef.current = true;
           }
+          // Build song timeline from parsed manifest for now-playing detection
+          songTimelineRef.current = buildSongTimeline(hls);
         });
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (data.fatal) {
@@ -167,16 +226,6 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
               onPlayStateChange?.(false);
             }
           }
-        });
-        // Detect song changes from HLS segment URLs
-        hls.on(Hls.Events.FRAG_CHANGED, (_event, data) => {
-          const url = data.frag.url;
-          const match = url.match(/\/audio\/songs\/([^/]+)\/([^/]+)\/(?:seg-|init)/);
-          if (!match) return;
-          const songKey = `${match[1]}/${match[2]}`;
-          if (songKey === lastDetectedSongRef.current) return;
-          lastDetectedSongRef.current = songKey;
-          onSongDetectedRef.current?.(slugToTitle(match[1]), slugToTitle(match[2]));
         });
         hlsRef.current = hls;
       } else if (isHls && audio.canPlayType('application/vnd.apple.mpegurl')) {
@@ -221,7 +270,18 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
       const audio = audioRef.current;
       if (!audio) return;
 
-      const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+      const onTimeUpdate = () => {
+        setCurrentTime(audio.currentTime);
+        // Detect current song from timeline built at manifest parse
+        const span = songAtTime(songTimelineRef.current, audio.currentTime);
+        if (span) {
+          const key = `${span.artist} - ${span.title}`;
+          if (key !== lastDetectedSongRef.current) {
+            lastDetectedSongRef.current = key;
+            onSongDetectedRef.current?.(span.artist, span.title);
+          }
+        }
+      };
       const onDurationChange = () => {
         if (isFinite(audio.duration)) setDuration(audio.duration);
       };
