@@ -9,6 +9,7 @@ import type {
   ChatMessage,
   StreamControlPayload,
   DjSwitchPayload,
+  ArtworkUpdatePayload,
 } from "@ownradio/shared";
 import { getSocket } from "../lib/socket";
 
@@ -26,6 +27,8 @@ interface UseStationReturn {
   streamActive: boolean;
   /** Currently active DJ info from dj_switch events */
   activeDj: DjSwitchPayload | null;
+  /** Live artwork URL — overrides station.artworkUrl when received via WebSocket */
+  artworkUrl: string | null;
   sendReaction: (type: ReactionType) => void;
   sendMessage: (content: string) => void;
 }
@@ -51,6 +54,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
   const [streamUrlOverride, setStreamUrlOverride] = useState<string | null>(null);
   const [streamActive, setStreamActive] = useState<boolean>(true);
   const [activeDj, setActiveDj] = useState<DjSwitchPayload | null>(null);
+  const [artworkUrl, setArtworkUrl] = useState<string | null>(station.artworkUrl ?? null);
   const [activeSlug, setActiveSlug] = useState(station.slug);
   const [songResolved, setSongResolved] = useState<boolean>(
     station.currentSong != null // already resolved if SSR provided a song
@@ -67,6 +71,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     setStreamActive(true);
     setActiveDj(null);
     setSongResolved(station.currentSong != null);
+    setArtworkUrl(station.artworkUrl ?? null);
   }
 
   // Keep a ref to currentSong so event handlers always see the latest value
@@ -129,12 +134,19 @@ export function useStation(station: StationWithDJ): UseStationReturn {
       setActiveDj(data);
     }
 
+    function onArtworkUpdate(data: ArtworkUpdatePayload) {
+      if (data.stationSlug === station.slug) {
+        setArtworkUrl(data.artworkUrl);
+      }
+    }
+
     socket.on("now_playing", onNowPlaying);
     socket.on("reaction_update", onReactionUpdate);
     socket.on("new_message", onNewMessage);
     socket.on("listener_count", onListenerCount);
     socket.on("stream_control", onStreamControl);
     socket.on("dj_switch", onDjSwitch);
+    socket.on("artwork_update", onArtworkUpdate);
 
     return () => {
       clearTimeout(resolveTimer);
@@ -145,6 +157,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
       socket.off("listener_count", onListenerCount);
       socket.off("stream_control", onStreamControl);
       socket.off("dj_switch", onDjSwitch);
+      socket.off("artwork_update", onArtworkUpdate);
     };
   }, [station.slug]);
 
@@ -185,6 +198,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     streamUrl,
     streamActive,
     activeDj,
+    artworkUrl,
     sendReaction,
     sendMessage,
   };
