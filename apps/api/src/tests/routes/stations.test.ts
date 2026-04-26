@@ -14,10 +14,18 @@ vi.mock("../../db/client.js", () => ({
     song: {
       findMany: vi.fn(),
     },
+    dJ: {
+      update: vi.fn(),
+    },
   },
 }));
 
+vi.mock("../../services/avatarGenerator.js", () => ({
+  generateDjAvatar: vi.fn().mockResolvedValue("https://assets.example.com/djs/dj-new.jpg"),
+}));
+
 import { prisma } from "../../db/client.js";
+import { generateDjAvatar } from "../../services/avatarGenerator.js";
 
 const MOCK_STATION = {
   id: "st1",
@@ -129,6 +137,28 @@ describe("POST /stations", () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error).toBeDefined();
+  });
+
+  it("generates avatar when DJ is created without avatarUrl", async () => {
+    vi.mocked(prisma.station.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.station.create).mockResolvedValue({
+      ...NEW_STATION,
+      dj: { ...NEW_STATION.dj, avatarUrl: null },
+    } as any);
+    vi.mocked(prisma.dJ.update).mockResolvedValue({
+      ...NEW_STATION.dj,
+      avatarUrl: "https://assets.example.com/djs/dj-new.jpg",
+    } as any);
+
+    const res = await supertest(app.server)
+      .post("/stations")
+      .set("x-playgen-secret", "")
+      .send({ slug: "metro-manila-mix", name: "Metro Manila Mix", genre: "OPM", dj: { name: "Camille", bio: "Taglish DJ" } });
+
+    expect(res.status).toBe(201);
+    expect(vi.mocked(generateDjAvatar)).toHaveBeenCalledWith(
+      expect.objectContaining({ djName: "Camille", genre: "OPM" })
+    );
   });
 });
 

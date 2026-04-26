@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { prisma } from "../db/client.js";
+import { generateDjAvatar } from "../services/avatarGenerator.js";
 
 const WEBHOOK_SECRET = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
 
@@ -61,6 +62,22 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
         },
         include: { dj: true },
       });
+
+      if (updated.dj && !updated.dj.avatarUrl) {
+        try {
+          const avatarUrl = await generateDjAvatar({
+            djId: updated.dj.id,
+            djName: updated.dj.name,
+            djBio: updated.dj.bio,
+            genre: updated.genre,
+          });
+          await prisma.dJ.update({ where: { id: updated.dj.id }, data: { avatarUrl } });
+          updated.dj.avatarUrl = avatarUrl;
+        } catch (err) {
+          app.log.error({ err }, 'Avatar generation failed for DJ %s', updated.dj.id);
+        }
+      }
+
       return reply.status(200).send(updated);
     }
 
@@ -80,6 +97,22 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
       },
       include: { dj: true },
     });
+
+    if (created.dj && !created.dj.avatarUrl) {
+      try {
+        const avatarUrl = await generateDjAvatar({
+          djId: created.dj.id,
+          djName: created.dj.name,
+          djBio: created.dj.bio,
+          genre: created.genre,
+        });
+        await prisma.dJ.update({ where: { id: created.dj.id }, data: { avatarUrl } });
+        created.dj.avatarUrl = avatarUrl;
+      } catch (err) {
+        app.log.error({ err }, 'Avatar generation failed for DJ %s', created.dj.id);
+      }
+    }
+
     return reply.status(201).send(created);
   });
 
