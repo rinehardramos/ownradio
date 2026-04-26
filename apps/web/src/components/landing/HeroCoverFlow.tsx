@@ -73,7 +73,7 @@ export function HeroCoverFlow({ stations, initialIndex = 0 }: HeroCoverFlowProps
   return (
     <section
       className="relative w-full overflow-hidden"
-      style={{ background: "#0f0f1a" }}
+      style={{ background: "#0f0f1a", touchAction: "pan-y" }}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
