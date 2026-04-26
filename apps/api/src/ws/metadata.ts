@@ -1,5 +1,6 @@
 import type { Server as IOServer } from "socket.io";
 import { prisma } from "../db/client.js";
+import { maybeRegenerateArtwork, initArtworkGenerator } from '../services/artworkGenerator.js';
 
 // Track last known song per station to skip duplicates
 const lastSongByStation = new Map<string, string>(); // stationId -> "Artist - Title"
@@ -65,6 +66,14 @@ export async function pollStation(
       playedAt: song.playedAt,
       duration: song.duration,
     });
+
+    const recentSongs = await prisma.song.findMany({
+      where: { stationId },
+      orderBy: { playedAt: 'desc' },
+      take: 5,
+      select: { id: true, stationId: true, artist: true, title: true, playedAt: true, albumCoverUrl: true, duration: true },
+    });
+    await maybeRegenerateArtwork(stationId, recentSongs);
   } catch {
     // DB error — log but don't crash poller
     console.error(`Failed to save song for station ${slug}`);
@@ -72,6 +81,7 @@ export async function pollStation(
 }
 
 export async function startMetadataPollers(io: IOServer): Promise<void> {
+  initArtworkGenerator(io);
   // Initial load of live stations
   await refreshPollers(io);
 
