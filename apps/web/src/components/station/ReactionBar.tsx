@@ -1,13 +1,14 @@
 'use client';
 import { useState } from 'react';
+import { Zap, Heart, Music, Moon, ThumbsDown, type LucideIcon } from 'lucide-react';
 import { ReactionType } from '@ownradio/shared';
 
-const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: 'rock',   emoji: '🤘', label: 'Rock'   },
-  { type: 'love',   emoji: '❤️', label: 'Love'   },
-  { type: 'vibe',   emoji: '🎵', label: 'Vibe'   },
-  { type: 'sleepy', emoji: '😴', label: 'Sleepy' },
-  { type: 'nah',    emoji: '👎', label: 'Nah'    },
+const REACTIONS: { type: ReactionType; Icon: LucideIcon; label: string }[] = [
+  { type: 'rock',   Icon: Zap,        label: 'Rock'   },
+  { type: 'love',   Icon: Heart,      label: 'Love'   },
+  { type: 'vibe',   Icon: Music,      label: 'Vibe'   },
+  { type: 'sleepy', Icon: Moon,       label: 'Sleepy' },
+  { type: 'nah',    Icon: ThumbsDown, label: 'Nah'    },
 ];
 
 interface ReactionBarProps {
@@ -21,8 +22,9 @@ export function ReactionBar({ activeReaction, onReact, orientation = 'vertical' 
   const [hoveredType, setHoveredType] = useState<ReactionType | null>(null);
   return (
     <div style={{ display: 'flex', flexDirection: isVertical ? 'column' : 'row', gap: '8px', padding: '8px' }}>
-      {REACTIONS.map(({ type, emoji, label }) => {
+      {REACTIONS.map(({ type, Icon, label }) => {
         const isActive = activeReaction === type;
+        const isLove = type === 'love';
         return (
           <button
             key={type}
@@ -37,7 +39,6 @@ export function ReactionBar({ activeReaction, onReact, orientation = 'vertical' 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '22px',
               borderRadius: 'var(--radius-md)',
               border: isActive
                 ? '1.5px solid rgba(255,45,120,0.5)'
@@ -56,7 +57,12 @@ export function ReactionBar({ activeReaction, onReact, orientation = 'vertical' 
             onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(0.85)'; }}
             onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
           >
-            {emoji}
+            <Icon
+              size={20}
+              strokeWidth={1.75}
+              color={isActive ? '#ff2d78' : 'rgba(255,255,255,0.65)'}
+              fill={isActive && isLove ? 'rgba(255,45,120,0.9)' : 'none'}
+            />
           </button>
         );
       })}

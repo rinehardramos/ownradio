@@ -1,4 +1,5 @@
 'use client';
+import { Music } from 'lucide-react';
 
 interface PlaylistModalProps { onClose: () => void; }
 
@@ -21,7 +22,9 @@ export function PlaylistModal({ onClose }: PlaylistModalProps) {
         </div>
         {MOCK_TRACKS.map((track, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid var(--border-subtle)' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🎵</div>
+            <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Music size={16} strokeWidth={1.75} color="rgba(255,255,255,0.4)" />
+            </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '14px', fontWeight: 600 }}>{track.title}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{track.artist}</div>

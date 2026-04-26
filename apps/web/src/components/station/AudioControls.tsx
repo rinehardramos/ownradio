@@ -1,6 +1,7 @@
 'use client';
 import { forwardRef, useImperativeHandle, useState, useCallback, useRef, useEffect } from 'react';
 import Hls from 'hls.js';
+import { Volume2, VolumeX, WifiOff } from 'lucide-react';
 
 export interface AudioControlsHandle {
   isPlaying: boolean;
@@ -256,7 +257,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
     if (streamError) {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-          <span style={{ fontSize: '18px' }}>📡</span>
+          <WifiOff size={18} color="rgba(255,255,255,0.4)" />
           <span>{streamError}</span>
         </div>
       );
@@ -308,7 +309,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
               className="btn-press"
               style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: 0 }}
             >
-              🔉
+              <VolumeX size={16} color="rgba(255,255,255,0.65)" />
             </button>
             <input
               type="range"
@@ -326,7 +327,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
               className="btn-press"
               style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '16px', padding: 0 }}
             >
-              🔊
+              <Volume2 size={16} color="rgba(255,255,255,0.65)" />
             </button>
           </div>
 

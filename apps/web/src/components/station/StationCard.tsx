@@ -13,6 +13,7 @@ import { PlaylistModal } from "./PlaylistModal";
 import { TopSongsModal } from "./TopSongsModal";
 import { FansModal } from "./FansModal";
 import { getStationPlaceholder, getDJPlaceholder, getSongPlaceholder } from "@/lib/placeholders";
+import { Mic2 } from 'lucide-react';
 
 interface StationCardProps {
   station: StationWithDJ;
@@ -286,7 +287,7 @@ export function StationCard({
               fontSize: "13px",
             }}
           >
-            <span style={{ fontSize: "18px" }}>🎙️</span>
+            <Mic2 size={18} strokeWidth={1.75} color="rgba(255,255,255,0.35)" />
             <span>Coming Soon — stream not yet available</span>
           </div>
         )}
