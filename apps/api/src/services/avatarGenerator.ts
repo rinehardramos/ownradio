@@ -66,7 +66,8 @@ export async function generateDjAvatar(opts: AvatarGeneratorOptions): Promise<st
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const prompt = buildPrompt(opts, variations[attempt] ?? variations[variations.length - 1]);
     const result = await openai.images.generate({ model: MODEL, prompt, size: '1024x1024', quality: 'standard', n: 1 });
-    const tmpUrl = result.data[0].url!;
+    const tmpUrl = result.data?.[0]?.url ?? '';
+    if (!tmpUrl) continue;
     const buf = await downloadFromUrl(tmpUrl);
     const imgHash = await hash.hash(buf, 16);
 
@@ -81,7 +82,9 @@ export async function generateDjAvatar(opts: AvatarGeneratorOptions): Promise<st
     // All retries exhausted — use last generated image anyway
     const prompt = buildPrompt(opts);
     const result = await openai.images.generate({ model: MODEL, prompt, size: '1024x1024', quality: 'standard', n: 1 });
-    imgBuffer = await downloadFromUrl(result.data[0].url!);
+    const fallbackUrl = result.data?.[0]?.url ?? '';
+    if (!fallbackUrl) throw new Error('Avatar generation failed: no image URL returned');
+    imgBuffer = await downloadFromUrl(fallbackUrl);
   }
 
   const key = `djs/${opts.djId}.jpg`;
