@@ -17,6 +17,10 @@ vi.mock("../../db/client.js", () => ({
     dJ: {
       update: vi.fn(),
     },
+    program: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -249,5 +253,44 @@ describe("GET /stations/:slug/top-songs", () => {
     const res = await supertest(app.server).get("/stations/unknown/top-songs");
     expect(res.status).toBe(404);
     expect(res.body.error).toBeDefined();
+  });
+});
+
+describe('GET /stations/:slug/programs', () => {
+  let app: Awaited<ReturnType<typeof buildApp>>;
+
+  const MOCK_PROGRAMS = [
+    {
+      id: 'prog1',
+      stationId: 'st1',
+      djId: 'dj1',
+      title: 'Late Night Vibes ep 1',
+      description: null,
+      recordedAt: new Date('2026-04-26T02:00:00Z'),
+      durationSecs: 3600,
+      playbackUrl: 'programs/prog1.mp3',
+      coverArtUrl: null,
+      createdAt: new Date(),
+    },
+  ];
+
+  beforeAll(async () => { app = await buildApp(); await app.ready(); });
+  afterAll(async () => { await app.close(); });
+  afterEach(() => vi.clearAllMocks());
+
+  it('returns programs for a valid station slug', async () => {
+    vi.mocked(prisma.station.findUnique).mockResolvedValue(MOCK_STATION as any);
+    vi.mocked(prisma.program.findMany).mockResolvedValue(MOCK_PROGRAMS as any);
+
+    const res = await supertest(app.server).get('/stations/rock-haven/programs');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body[0].title).toBe('Late Night Vibes ep 1');
+  });
+
+  it('returns 404 for unknown station', async () => {
+    vi.mocked(prisma.station.findUnique).mockResolvedValue(null);
+    const res = await supertest(app.server).get('/stations/unknown/programs');
+    expect(res.status).toBe(404);
   });
 });

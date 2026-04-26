@@ -158,4 +158,30 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
     });
     return songs;
   });
+
+  // GET /stations/:slug/programs
+  app.get<{ Params: { slug: string } }>('/stations/:slug/programs', async (request, reply) => {
+    const { slug } = request.params;
+    const station = await prisma.station.findUnique({ where: { slug } });
+    if (!station) return reply.status(404).send({ error: 'Station not found' });
+    const limit = Number(process.env.PROGRAM_HISTORY_LIMIT ?? 5);
+    const programs = await prisma.program.findMany({
+      where: { stationId: station.id },
+      orderBy: { recordedAt: 'desc' },
+      take: limit,
+    });
+    return programs;
+  });
+
+  // GET /djs/:djId/programs
+  app.get<{ Params: { djId: string } }>('/djs/:djId/programs', async (request, reply) => {
+    const { djId } = request.params;
+    const limit = Number(process.env.PROGRAM_HISTORY_LIMIT ?? 5);
+    const programs = await prisma.program.findMany({
+      where: { djId },
+      orderBy: { recordedAt: 'desc' },
+      take: limit,
+    });
+    return programs;
+  });
 };
