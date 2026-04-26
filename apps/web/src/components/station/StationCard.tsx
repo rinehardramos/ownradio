@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import type {
   StationWithDJ,
   ReactionType,
   Song,
   DjSwitchPayload,
+  Program,
 } from "@ownradio/shared";
 import { AudioControls, type AudioControlsHandle } from "./AudioControls";
 import { ReactionBar } from "./ReactionBar";
@@ -13,7 +14,8 @@ import { PlaylistModal } from "./PlaylistModal";
 import { TopSongsModal } from "./TopSongsModal";
 import { FansModal } from "./FansModal";
 import { getStationPlaceholder, getDJPlaceholder, getSongPlaceholder } from "@/lib/placeholders";
-import { Mic2 } from 'lucide-react';
+import { Mic2, ChevronDown, ChevronUp } from 'lucide-react';
+import { PastShowsList } from './PastShowsList';
 
 interface StationCardProps {
   station: StationWithDJ;
@@ -52,16 +54,40 @@ export function StationCard({
   const resolvedRef = audioRef ?? internalRef;
 
   const [openModal, setOpenModal] = useState<ModalType>(null);
+  const [showPastShows, setShowPastShows] = useState(false);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [activeProgram, setActiveProgram] = useState<Program | null>(null);
+  const [programStreamUrl, setProgramStreamUrl] = useState<string | null>(null);
 
   const heroImg = station.artworkUrl || getStationPlaceholder(station.genre);
   const djName = activeDj?.name ?? station.dj?.name ?? null;
+
+  useEffect(() => {
+    if (!showPastShows) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/stations/${station.slug}/programs`)
+      .then((r) => r.json())
+      .then((data: Program[]) => setPrograms(data))
+      .catch(() => setPrograms([]));
+  }, [showPastShows, station.slug]);
+
+  function handleProgramPlay(prog: Program) {
+    if (activeProgram?.id === prog.id) {
+      setActiveProgram(null);
+      setProgramStreamUrl(null);
+    } else {
+      setActiveProgram(prog);
+      setProgramStreamUrl(prog.playbackUrl);
+    }
+  }
 
   // "mock" is the sentinel for placeholder-only stations with no real stream.
   // Empty string means coming soon. Both should not attempt HLS playback.
   const rawStreamUrl = streamUrl ?? station.streamUrl;
   const isPlaceholderStream =
     !rawStreamUrl || rawStreamUrl === "mock" || rawStreamUrl.startsWith("https://placeholder.example");
-  const effectiveStreamUrl = isPlaceholderStream ? null : rawStreamUrl;
+  const effectiveStreamUrl = programStreamUrl
+    ? programStreamUrl
+    : isPlaceholderStream ? null : rawStreamUrl;
 
   return (
     <div style={{ position: "relative", width: "100%", minHeight: "100%" }}>
@@ -386,6 +412,24 @@ export function StationCard({
               </button>
             ))}
           </div>
+        </div>
+        {/* Past Shows */}
+        <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+          <button
+            onClick={() => setShowPastShows((v) => !v)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}
+          >
+            Past Shows
+            {showPastShows
+              ? <ChevronUp size={14} strokeWidth={2} color="rgba(255,255,255,0.4)" />
+              : <ChevronDown size={14} strokeWidth={2} color="rgba(255,255,255,0.4)" />
+            }
+          </button>
+          {showPastShows && (
+            <div style={{ padding: '0 16px 12px' }}>
+              <PastShowsList programs={programs} onPlay={handleProgramPlay} activeProgram={activeProgram} />
+            </div>
+          )}
         </div>
       </div>
 
