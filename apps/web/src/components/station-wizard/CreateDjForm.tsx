@@ -50,8 +50,8 @@ export function CreateDjForm({ stationSlug, onComplete }: CreateDjFormProps) {
         ttsVoiceId: ttsVoiceId || undefined,
       });
       onComplete();
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to create DJ profile');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create DJ profile');
     } finally {
       setSubmitting(false);
     }

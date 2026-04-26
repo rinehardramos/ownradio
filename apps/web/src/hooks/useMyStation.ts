@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { getUserStations, getStationReadiness, type ReadinessCheck } from '../lib/api';
+import type { OwnedStation } from '@ownradio/shared';
 
 export type WizardStep = 'station' | 'dj' | 'program' | 'readiness';
 
 export interface MyStationState {
-  station: any | null;
+  station: OwnedStation | null;
   readiness: ReadinessCheck | null;
   loading: boolean;
   wizardStep: WizardStep;
@@ -15,15 +16,16 @@ export interface MyStationState {
 }
 
 export function useMyStation(): MyStationState {
-  const [station, setStation] = useState<any | null>(null);
+  const [station, setStation] = useState<OwnedStation | null>(null);
   const [readiness, setReadiness] = useState<ReadinessCheck | null>(null);
   const [loading, setLoading] = useState(true);
   const [wizardStep, setWizardStep] = useState<WizardStep>('station');
+  const [initialized, setInitialized] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
       const stations = await getUserStations();
-      const first = Array.isArray(stations) && stations.length > 0 ? stations[0] : null;
+      const first = Array.isArray(stations) && stations.length > 0 ? stations[0] as OwnedStation : null;
       setStation(first);
 
       if (first?.slug) {
@@ -43,7 +45,11 @@ export function useMyStation(): MyStationState {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  // Load on first render without useEffect + setState pattern
+  if (!initialized) {
+    setInitialized(true);
+    refresh();
+  }
 
   return { station, readiness, loading, wizardStep, setWizardStep, refresh };
 }

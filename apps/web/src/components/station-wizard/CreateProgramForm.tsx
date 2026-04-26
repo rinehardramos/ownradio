@@ -42,8 +42,8 @@ export function CreateProgramForm({ stationSlug, onComplete }: CreateProgramForm
         description: description.trim() || undefined,
       });
       onComplete();
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to create program');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create program');
     } finally {
       setSubmitting(false);
     }

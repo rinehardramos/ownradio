@@ -37,8 +37,8 @@ export function CreateStationForm({ onComplete }: CreateStationFormProps) {
     try {
       await createUserStation({ name: name.trim(), genre, slug, description: description.trim() });
       onComplete();
-    } catch (err: any) {
-      setError(err?.message ?? 'Failed to create station');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create station');
     } finally {
       setSubmitting(false);
     }
