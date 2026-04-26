@@ -84,9 +84,9 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     const resolveTimer = setTimeout(() => setSongResolved(true), 5000);
 
     function onNowPlaying(song: Song) {
-      // Guard: the singleton socket receives events for all stations.
-      // Only accept songs that belong to the station this hook instance manages.
-      if (song.stationId !== station.id) return;
+      // Guard: only filter by stationId when the backend includes it in the payload.
+      // If stationId is absent (backend omits it), let the event through.
+      if (song.stationId && song.stationId !== station.id) return;
       setCurrentSong(song);
       setSongResolved(true);
       setActiveReaction(null); // reset on song change
