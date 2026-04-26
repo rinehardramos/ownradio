@@ -76,9 +76,15 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
     const hlsRef = useRef<Hls | null>(null);
     const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const resumedRef = useRef(false);
+    const autoPlayRef = useRef(autoPlay);
 
     // Slug for localStorage key (fall back to URL-based key)
     const slug = stationSlug || streamUrl.replace(/[^a-z0-9]/gi, '-').slice(0, 40);
+
+    // Keep autoPlayRef in sync with the prop without re-running the HLS setup effect
+    useEffect(() => {
+      autoPlayRef.current = autoPlay;
+    }, [autoPlay]);
 
     // HLS.js setup
     useEffect(() => {
@@ -88,6 +94,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
       // Stop current playback and clean up
       audio.pause();
       audio.removeAttribute('src');
+      audio.autoplay = false;
       audio.load();
       setIsPlaying(false);
       setCurrentTime(0);
@@ -108,6 +115,12 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
 
       const isHls = streamUrl.endsWith('.m3u8');
 
+      // Set autoplay attribute synchronously — before any source loads.
+      // The HTML autoplay attribute is honoured by the browser as long as a prior
+      // user gesture has occurred in the page, unlike async play() calls which
+      // fire outside the gesture window and are silently rejected.
+      audio.autoplay = autoPlayRef.current;
+
       if (isHls && Hls.isSupported()) {
         const hls = new Hls({
           enableWorker: true,
@@ -126,12 +139,6 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
           if (saved != null && saved > 0) {
             audio.currentTime = saved;
             resumedRef.current = true;
-          }
-          // Auto-play if user was already listening before navigating
-          if (autoPlay) {
-            audio.play().catch((err) => {
-              console.warn('[Audio] auto-play rejected (browser policy):', err);
-            });
           }
         });
         hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -154,21 +161,9 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
             audio.currentTime = saved;
             resumedRef.current = true;
           }
-          if (autoPlay) {
-            audio.play().catch((err) => {
-              console.warn('[Audio] auto-play rejected (browser policy):', err);
-            });
-          }
         }, { once: true });
       } else {
         audio.src = streamUrl;
-        if (autoPlay) {
-          audio.addEventListener('canplay', () => {
-            audio.play().catch((err) => {
-              console.warn('[Audio] auto-play rejected (browser policy):', err);
-            });
-          }, { once: true });
-        }
       }
 
       // Save position every 5 seconds during playback
@@ -193,7 +188,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
         }
       };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [streamUrl, autoPlay]);
+    }, [streamUrl]);
 
     // Track currentTime and duration for progress bar
     useEffect(() => {
