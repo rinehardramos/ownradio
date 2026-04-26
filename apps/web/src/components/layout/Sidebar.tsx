@@ -16,10 +16,11 @@ const NavIcon = ({ d, size = 18 }: { d: string; size?: number }) => (
 );
 
 const NAV_LINKS = [
-  { href: '/',        label: 'Home',    icon: 'M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z' },
-  { href: '/browse',  label: 'Browse',  icon: 'M12 2a7 7 0 017 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 017-7zm0 4a3 3 0 100 6 3 3 0 000-6z' },
-  { href: '/library', label: 'Library', icon: 'M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 014 17V5a2 2 0 012-2h14v14H6.5A2.5 2.5 0 004 19.5z' },
-  { href: '/profile', label: 'Profile', icon: 'M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z' },
+  { href: '/',            label: 'Home',       icon: 'M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z' },
+  { href: '/browse',      label: 'Browse',     icon: 'M12 2a7 7 0 017 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 017-7zm0 4a3 3 0 100 6 3 3 0 000-6z' },
+  { href: '/my-station',  label: 'My Station', icon: 'M4.9 19.1C1 15.2 1 8.8 4.9 4.9M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5M12 12a1 1 0 100-2 1 1 0 000 2zm0 0v8' },
+  { href: '/library',     label: 'Library',    icon: 'M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 014 17V5a2 2 0 012-2h14v14H6.5A2.5 2.5 0 004 19.5z' },
+  { href: '/profile',     label: 'Profile',    icon: 'M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z' },
 ];
 
 export function Sidebar({ stations, activeStationId, onStationClick }: SidebarProps) {

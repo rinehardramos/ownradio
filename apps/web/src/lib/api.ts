@@ -92,3 +92,68 @@ export async function getStation(slug: string): Promise<StationWithDJ> {
 export async function getStationTopSongs(slug: string): Promise<Song[]> {
   return apiFetch<Song[]>(`/stations/${slug}/top-songs`);
 }
+
+// --- User Station APIs ---
+
+export interface CreateStationPayload {
+  name: string;
+  genre: string;
+  slug: string;
+  description?: string;
+}
+
+export interface CreateDjPayload {
+  stationSlug: string;
+  name: string;
+  bio: string;
+  localeCities: string[];
+  languages: Array<{ code: string; weight: number }>;
+  personality?: string;
+  ttsVoiceId?: string;
+}
+
+export interface CreateProgramPayload {
+  title: string;
+  scheduledAt: string;
+  durationSecs: number;
+  description?: string;
+}
+
+export interface ReadinessCheck {
+  station: boolean;
+  dj: boolean;
+  program: boolean;
+  status: 'off_air' | 'on_air';
+}
+
+export interface TtsVoice {
+  id: string;
+  name: string;
+  locale: string;
+}
+
+export function createUserStation(data: CreateStationPayload) {
+  return apiFetch('/user/stations', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function getUserStations() {
+  return apiFetch('/user/stations');
+}
+
+export function createDjProfile(data: CreateDjPayload) {
+  return apiFetch('/user/dj-profiles', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function getTtsVoices(): Promise<TtsVoice[]> {
+  return apiFetch('/user/tts-voices');
+}
+
+export function createStationProgram(slug: string, data: CreateProgramPayload) {
+  return apiFetch(`/user/stations/${slug}/programs`, {
+    method: 'POST', body: JSON.stringify(data),
+  });
+}
+
+export function getStationReadiness(slug: string): Promise<ReadinessCheck> {
+  return apiFetch(`/user/stations/${slug}/readiness`);
+}
