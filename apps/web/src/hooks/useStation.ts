@@ -67,6 +67,7 @@ export function useStation(station: StationWithDJ): UseStationReturn {
   // to comply with React strict mode (no ref access during render).
   if (activeSlug !== station.slug) {
     setActiveSlug(station.slug);
+    setCurrentSong(station.currentSong ?? null);
     setStreamUrlOverride(null);
     setStreamActive(true);
     setActiveDj(null);

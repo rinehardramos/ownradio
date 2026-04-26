@@ -101,7 +101,7 @@ function StationCarouselInner({
       onDotClick={setCurrentIndex}
       currentSong={
         currentSong
-          ? { title: currentSong.title, artist: currentSong.artist }
+          ? { title: currentSong.title, artist: currentSong.artist, albumCoverUrl: currentSong.albumCoverUrl }
           : null
       }
       currentStation={currentStation}

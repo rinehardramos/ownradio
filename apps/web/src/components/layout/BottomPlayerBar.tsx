@@ -2,7 +2,7 @@
 import { Music } from 'lucide-react';
 
 interface BottomPlayerBarProps {
-  currentSong: { title: string; artist: string } | null;
+  currentSong: { title: string; artist: string; albumCoverUrl?: string | null } | null;
   station: { name: string } | null;
   isPlaying: boolean;
   volume: number;
@@ -19,8 +19,14 @@ export function BottomPlayerBar({ currentSong, station, isPlaying, volume, liste
     <div style={{ height: '72px', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: '16px' }}>
       {/* Left: 240px — album art + song info */}
       <div style={{ width: '240px', display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
-        <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Music size={20} strokeWidth={1.75} color="rgba(255,255,255,0.4)" />
+        <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+          {currentSong?.albumCoverUrl
+            ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={currentSong.albumCoverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            )
+            : <Music size={20} strokeWidth={1.75} color="rgba(255,255,255,0.4)" />
+          }
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: '13px', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentSong?.title ?? 'Not playing'}</div>

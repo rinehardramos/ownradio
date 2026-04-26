@@ -14,7 +14,7 @@ interface AppShellProps {
   currentIndex: number;
   onDotClick: (index: number) => void;
   // Player bar
-  currentSong: { title: string; artist: string } | null;
+  currentSong: { title: string; artist: string; albumCoverUrl?: string | null } | null;
   currentStation: Station | null;
   isPlaying: boolean;
   volume: number;
