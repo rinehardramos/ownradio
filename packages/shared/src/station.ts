@@ -64,3 +64,15 @@ export interface StationWithDJ extends Station {
   listenerCount: number;
   currentSong: Song | null;
 }
+
+export interface Program {
+  id: string;
+  stationId: string;
+  djId: string | null;
+  title: string;
+  description: string | null;
+  recordedAt: string;       // ISO 8601
+  durationSecs: number;
+  playbackUrl: string;
+  coverArtUrl: string | null;
+}
