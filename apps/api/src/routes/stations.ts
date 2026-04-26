@@ -119,6 +119,12 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
   // GET /stations
   app.get("/stations", async (request, reply) => {
     const stations = await prisma.station.findMany({
+      where: {
+        OR: [
+          { status: 'on_air' },
+          { ownerId: null },  // legacy system stations
+        ],
+      },
       include: {
         dj: true,
         songs: { orderBy: { playedAt: "desc" }, take: 1 },
