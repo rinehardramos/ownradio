@@ -23,6 +23,14 @@ export async function fetchIcecastMetadata(
     const res = await fetch(metadataUrl);
     if (!res.ok) return null;
     const data = await res.json();
+
+    // PlayGen flat format: { artist: "Maki", song: "Dilaw", title: "Maki - Dilaw" }
+    if (typeof data?.artist === "string" && typeof data?.song === "string") {
+      const artist = data.artist.trim();
+      const title = data.song.trim();
+      if (artist && title) return { artist, title };
+    }
+
     // Icecast JSON format: { icestats: { source: { title: "Artist - Title" } } }
     const rawTitle: string =
       data?.icestats?.source?.title ??
