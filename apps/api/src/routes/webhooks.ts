@@ -3,13 +3,21 @@ import type { Server as IOServer } from "socket.io";
 import type { StreamControlPayload, DjSwitchPayload } from "@ownradio/shared";
 import { prisma } from "../db/client.js";
 
-const WEBHOOK_SECRET = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
-
 function verifySecret(req: { headers: Record<string, string | string[] | undefined> }): boolean {
-  if (!WEBHOOK_SECRET) return true; // disabled in dev if unset
+  const secret = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
+  if (!secret) return true; // disabled in dev if unset
   const header = req.headers["x-playgen-secret"];
   const token = Array.isArray(header) ? header[0] : header;
-  return token === WEBHOOK_SECRET;
+  return token === secret;
+}
+
+interface ProgramWebhookBody {
+  title: string;
+  description?: string;
+  recordedAt: string;
+  durationSecs: number;
+  playbackUrl: string;
+  coverArtUrl?: string;
 }
 
 /**
@@ -62,5 +70,43 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
       getIo().to(`station:${slug}`).emit("dj_switch", { ...payload, stationSlug: slug });
       return { ok: true };
     });
+
+    // POST /webhooks/stations/:slug/program
+    app.post<{ Params: { slug: string }; Body: ProgramWebhookBody }>(
+      '/webhooks/stations/:slug/program',
+      async (request, reply) => {
+        if (!verifySecret(request)) return reply.status(401).send({ error: 'Unauthorized' });
+
+        const { slug } = request.params;
+        const { title, description, recordedAt, durationSecs, playbackUrl, coverArtUrl } = request.body ?? {};
+
+        if (!title || !recordedAt || !durationSecs || !playbackUrl) {
+          return reply.status(400).send({ error: 'title, recordedAt, durationSecs, and playbackUrl are required' });
+        }
+
+        const station = await prisma.station.findUnique({
+          where: { slug },
+          include: { dj: { select: { id: true } } },
+        });
+        if (!station) return reply.status(404).send({ error: 'Station not found' });
+
+        const program = await prisma.program.upsert({
+          where: { stationId_recordedAt: { stationId: station.id, recordedAt: new Date(recordedAt) } },
+          update: { title, description: description ?? null, durationSecs, playbackUrl, coverArtUrl: coverArtUrl ?? null },
+          create: {
+            stationId: station.id,
+            djId: station.dj?.id ?? null,
+            title,
+            description: description ?? null,
+            recordedAt: new Date(recordedAt),
+            durationSecs,
+            playbackUrl,
+            coverArtUrl: coverArtUrl ?? null,
+          },
+        });
+
+        return reply.status(201).send({ program });
+      }
+    );
   };
 }

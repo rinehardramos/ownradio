@@ -9,6 +9,9 @@ import { setupSocketHandlers } from "./ws/index.js";
 import { startMetadataPollers, stopAllPollers } from "./ws/metadata.js";
 import { prisma } from "./db/client.js";
 
+// Shared mutable ref — populated by start() after listen(); stays null in tests.
+const ioHolder: { current: IOServer | null } = { current: null };
+
 export async function buildApp() {
   const app = Fastify({ logger: true });
 
@@ -41,6 +44,7 @@ export async function buildApp() {
 
   app.register(stationRoutes);
   app.register(authRoutes);
+  app.register(buildWebhookRoutes(() => ioHolder.current as IOServer));
 
   return app;
 }
@@ -50,21 +54,17 @@ async function start() {
   const port = Number(process.env.PORT) || 4000;
 
   // socket.io attaches to the raw http.Server which isn't created until listen(),
-  // so we use a deferred pattern: create io after listen, but register routes
-  // before listen using a placeholder that we fill in right after.
-  let ioRef: IOServer;
-  app.register(buildWebhookRoutes(() => ioRef));
-
+  // so we listen first, then wire up IO into the shared holder.
   await app.listen({ port, host: "0.0.0.0" });
 
-  ioRef = new IOServer(app.server, {
+  ioHolder.current = new IOServer(app.server, {
     cors: {
       origin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
       credentials: true,
     },
   });
-  setupSocketHandlers(ioRef);
-  startMetadataPollers(ioRef).catch((err) => {
+  setupSocketHandlers(ioHolder.current);
+  startMetadataPollers(ioHolder.current).catch((err) => {
     console.error("Failed to start metadata pollers:", err);
   });
 
