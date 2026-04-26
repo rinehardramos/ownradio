@@ -8,33 +8,42 @@ generator client {
 }
 
 model Station {
-  id           String        @id @default(cuid())
-  name         String
-  slug         String        @unique
-  description  String
-  streamUrl    String        @map("stream_url")
-  metadataUrl  String        @map("metadata_url")
-  genre        String
-  artworkUrl   String?       @map("artwork_url")
-  isLive       Boolean       @default(false) @map("is_live")
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  dj           DJ?
-  songs        Song[]
-  reactions    Reaction[]
-  chatMessages ChatMessage[]
-  programs     Program[]
+  id               String          @id @default(cuid())
+  name             String
+  slug             String          @unique
+  description      String
+  streamUrl        String          @map("stream_url")
+  metadataUrl      String          @map("metadata_url")
+  genre            String
+  artworkUrl       String?         @map("artwork_url")
+  isLive           Boolean         @default(false) @map("is_live")
+  ownerId          String?         @map("owner_id")
+  status           String          @default("off_air") @map("status")
+  playgenStationId String?         @unique @map("playgen_station_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  dj               DJ?
+  songs            Song[]
+  reactions        Reaction[]
+  chatMessages     ChatMessage[]
+  programs         Program[]
+  stationPrograms  StationProgram[]
+  owner            Listener?       @relation(fields: [ownerId], references: [id])
 
   @@map("stations")
 }
 
 model DJ {
-  id        String  @id @default(cuid())
-  stationId String  @unique @map("station_id")
-  name      String
-  bio       String
-  avatarUrl String? @map("avatar_url")
-  station   Station @relation(fields: [stationId], references: [id])
+  id           String   @id @default(cuid())
+  stationId    String   @unique @map("station_id")
+  name         String
+  bio          String
+  avatarUrl    String?  @map("avatar_url")
+  playgenDjId  String?  @unique @map("playgen_dj_id")
+  localeCities String[] @map("locale_cities")
+  languages    Json     @default("[]") @map("languages")
+  personality  String?
+  station      Station  @relation(fields: [stationId], references: [id])
 
   @@map("djs")
 }
@@ -47,6 +56,7 @@ model Listener {
   createdAt    DateTime      @default(now()) @map("created_at")
   reactions    Reaction[]
   chatMessages ChatMessage[]
+  stations     Station[]
 
   @@map("listeners")
 }
@@ -109,4 +119,18 @@ model Program {
 
   @@unique([stationId, recordedAt])
   @@map("programs")
+}
+
+model StationProgram {
+  id               String   @id @default(cuid())
+  stationId        String   @map("station_id")
+  playgenProgramId String?  @unique @map("playgen_program_id")
+  title            String
+  description      String?
+  scheduledAt      DateTime @map("scheduled_at")
+  durationSecs     Int      @map("duration_secs")
+  createdAt        DateTime @default(now()) @map("created_at")
+  station          Station  @relation(fields: [stationId], references: [id])
+
+  @@map("station_programs")
 }
