@@ -4,6 +4,7 @@ import cookie from "@fastify/cookie";
 import { Server as IOServer } from "socket.io";
 import { stationRoutes } from "./routes/stations.js";
 import { authRoutes } from "./routes/auth.js";
+import { userRoutes } from "./routes/user.js";
 import { buildWebhookRoutes } from "./routes/webhooks.js";
 import { setupSocketHandlers } from "./ws/index.js";
 import { startMetadataPollers, stopAllPollers } from "./ws/metadata.js";
@@ -44,6 +45,7 @@ export async function buildApp() {
 
   app.register(stationRoutes);
   app.register(authRoutes);
+  app.register(userRoutes);
   app.register(buildWebhookRoutes(() => ioHolder.current as IOServer));
 
   return app;
