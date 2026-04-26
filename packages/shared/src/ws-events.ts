@@ -23,6 +23,11 @@ export interface DjSwitchPayload {
   stationSlug: string;
 }
 
+export interface ArtworkUpdatePayload {
+  stationSlug: string;
+  artworkUrl: string;
+}
+
 export interface ServerEvents {
   now_playing(payload: { title: string; artist: string; albumCoverUrl: string | null }): void;
   reaction_update(payload: { songId: string; counts: ReactionCounts }): void;
@@ -33,5 +38,6 @@ export interface ServerEvents {
   stream_control(payload: StreamControlPayload): void;
   /** PlayGen → OwnRadio: active DJ changed */
   dj_switch(payload: DjSwitchPayload): void;
+  artwork_update(payload: ArtworkUpdatePayload): void;
   error(payload: { message: string }): void;
 }
