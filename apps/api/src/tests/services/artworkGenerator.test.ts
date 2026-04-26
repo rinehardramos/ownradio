@@ -26,7 +26,7 @@ vi.mock('openai', () => ({
 import { prisma } from '../../db/client.js';
 
 process.env.ARTWORK_PROVIDER = 'mock';
-process.env.R2_PUBLIC_URL = 'cdn-base';
+process.env.S3_PUBLIC_URL = 'cdn-base';
 process.env.ARTWORK_REGEN_INTERVAL_MS = '1800000';
 
 import { maybeRegenerateArtwork } from '../../services/artworkGenerator.js';

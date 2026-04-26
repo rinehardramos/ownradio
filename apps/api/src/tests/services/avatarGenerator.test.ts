@@ -28,7 +28,7 @@ vi.mock('../../db/client.js', () => ({
 describe('generateDjAvatar — mock provider', () => {
   beforeEach(() => {
     process.env.AVATAR_PROVIDER = 'mock';
-    process.env.R2_PUBLIC_URL = 'https://assets.example.com';
+    process.env.S3_PUBLIC_URL = 'https://assets.example.com';
   });
 
   it('returns placeholder URL without calling DALL-E', async () => {
@@ -42,7 +42,7 @@ describe('generateDjAvatar — openai provider', () => {
   beforeEach(() => {
     vi.resetModules();
     process.env.AVATAR_PROVIDER = 'openai';
-    process.env.R2_PUBLIC_URL = 'https://assets.example.com';
+    process.env.S3_PUBLIC_URL = 'https://assets.example.com';
     process.env.AVATAR_MAX_RETRIES = '3';
     process.env.AVATAR_PHASH_THRESHOLD = '90';
   });

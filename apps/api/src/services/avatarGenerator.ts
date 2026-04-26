@@ -14,7 +14,7 @@ const PROVIDER = process.env.AVATAR_PROVIDER ?? 'openai';
 const MODEL = process.env.AVATAR_MODEL ?? 'dall-e-3';
 const THRESHOLD = Number(process.env.AVATAR_PHASH_THRESHOLD ?? 90);
 const MAX_RETRIES = Number(process.env.AVATAR_MAX_RETRIES ?? 3);
-const PUBLIC_URL = process.env.R2_PUBLIC_URL ?? '';
+const PUBLIC_URL = process.env.S3_PUBLIC_URL ?? '';
 
 function buildPrompt(opts: AvatarGeneratorOptions, variation = ''): string {
   const bio = opts.djBio.slice(0, 120);

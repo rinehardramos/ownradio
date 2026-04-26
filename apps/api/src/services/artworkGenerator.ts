@@ -14,7 +14,7 @@ const generationState = new Map<string, GenerationState>();
 const REGEN_INTERVAL_MS = parseInt(process.env.ARTWORK_REGEN_INTERVAL_MS ?? '1800000', 10);
 const PROVIDER = process.env.ARTWORK_PROVIDER ?? 'openai';
 const MODEL = process.env.ARTWORK_MODEL ?? 'dall-e-3';
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL ?? '';
+const R2_PUBLIC_URL = process.env.S3_PUBLIC_URL ?? '';
 
 const GENRE_MOOD: Record<string, string> = {
   rock: 'energetic, raw',
