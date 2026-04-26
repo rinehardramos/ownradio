@@ -9,6 +9,7 @@ import type {
   Program,
 } from "@ownradio/shared";
 import { AudioControls, type AudioControlsHandle } from "./AudioControls";
+import { getSocket } from "@/lib/socket";
 import { ReactionBar } from "./ReactionBar";
 import { PlaylistModal } from "./PlaylistModal";
 import { TopSongsModal } from "./TopSongsModal";
@@ -299,6 +300,10 @@ export function StationCard({
             autoPlay={autoPlay}
             onPlayStateChange={onPlayStateChange}
             onVolumeChange={onVolumeChange}
+            onSongDetected={(artist, title) => {
+              const socket = getSocket();
+              socket.emit('client_now_playing', { stationId: station.id, artist, title });
+            }}
           />
         ) : (
           <div

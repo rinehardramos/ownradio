@@ -16,6 +16,15 @@ interface AudioControlsProps {
   autoPlay?: boolean;
   onPlayStateChange?: (playing: boolean) => void;
   onVolumeChange?: (volume: number) => void;
+  onSongDetected?: (artist: string, title: string) => void;
+}
+
+/** Convert a URL slug like "the-chainsmokers-featuring-halsey" to "The Chainsmokers Featuring Halsey" */
+function slugToTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 }
 
 // ── localStorage helpers for resume ─────────────────────────────────────────
@@ -67,7 +76,7 @@ function formatTime(seconds: number): string {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>(
-  function AudioControls({ streamUrl, stationSlug, autoPlay = false, onPlayStateChange, onVolumeChange }, ref) {
+  function AudioControls({ streamUrl, stationSlug, autoPlay = false, onPlayStateChange, onVolumeChange, onSongDetected }, ref) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolumeState] = useState(0.8);
     const [streamError, setStreamError] = useState<string | null>(null);
@@ -78,14 +87,19 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
     const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const resumedRef = useRef(false);
     const autoPlayRef = useRef(autoPlay);
+    const lastDetectedSongRef = useRef<string>('');
+    const onSongDetectedRef = useRef(onSongDetected);
 
     // Slug for localStorage key (fall back to URL-based key)
     const slug = stationSlug || streamUrl.replace(/[^a-z0-9]/gi, '-').slice(0, 40);
 
-    // Keep autoPlayRef in sync with the prop without re-running the HLS setup effect
+    // Keep refs in sync with props without re-running the HLS setup effect
     useEffect(() => {
       autoPlayRef.current = autoPlay;
     }, [autoPlay]);
+    useEffect(() => {
+      onSongDetectedRef.current = onSongDetected;
+    }, [onSongDetected]);
 
     // HLS.js setup
     useEffect(() => {
@@ -113,6 +127,7 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
       }
 
       setStreamError(null);
+      lastDetectedSongRef.current = '';
 
       const isHls = streamUrl.endsWith('.m3u8');
 
@@ -152,6 +167,16 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
               onPlayStateChange?.(false);
             }
           }
+        });
+        // Detect song changes from HLS segment URLs
+        hls.on(Hls.Events.FRAG_CHANGED, (_event, data) => {
+          const url = data.frag.url;
+          const match = url.match(/\/audio\/songs\/([^/]+)\/([^/]+)\/(?:seg-|init)/);
+          if (!match) return;
+          const songKey = `${match[1]}/${match[2]}`;
+          if (songKey === lastDetectedSongRef.current) return;
+          lastDetectedSongRef.current = songKey;
+          onSongDetectedRef.current?.(slugToTitle(match[1]), slugToTitle(match[2]));
         });
         hlsRef.current = hls;
       } else if (isHls && audio.canPlayType('application/vnd.apple.mpegurl')) {

@@ -50,26 +50,22 @@ export async function fetchIcecastMetadata(
   }
 }
 
-export async function pollStation(
+/** Save a new song to DB and broadcast now_playing to all listeners.
+ *  Shared by the metadata poller and the client_now_playing socket handler. */
+export async function onNewSong(
   io: IOServer,
   stationId: string,
   slug: string,
-  metadataUrl: string
+  artist: string,
+  title: string,
 ): Promise<void> {
-  const metadata = await fetchIcecastMetadata(metadataUrl);
-  if (!metadata) return;
-
-  const songKey = `${metadata.artist} - ${metadata.title}`;
-  if (lastSongByStation.get(stationId) === songKey) return; // Same song, skip
+  const songKey = `${artist} - ${title}`;
+  if (lastSongByStation.get(stationId) === songKey) return;
   lastSongByStation.set(stationId, songKey);
 
   try {
     const song = await prisma.song.create({
-      data: {
-        stationId,
-        title: metadata.title,
-        artist: metadata.artist,
-      },
+      data: { stationId, title, artist },
     });
 
     const nowPlaying = {
@@ -92,9 +88,19 @@ export async function pollStation(
     });
     await maybeRegenerateArtwork(stationId, recentSongs);
   } catch {
-    // DB error — log but don't crash poller
     console.error(`Failed to save song for station ${slug}`);
   }
+}
+
+export async function pollStation(
+  io: IOServer,
+  stationId: string,
+  slug: string,
+  metadataUrl: string
+): Promise<void> {
+  const metadata = await fetchIcecastMetadata(metadataUrl);
+  if (!metadata) return;
+  await onNewSong(io, stationId, slug, metadata.artist, metadata.title);
 }
 
 export async function startMetadataPollers(io: IOServer): Promise<void> {

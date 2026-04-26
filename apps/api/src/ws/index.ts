@@ -2,7 +2,7 @@ import type { Server as IOServer } from "socket.io";
 import { verifyToken } from "../lib/jwt.js";
 import { handleChat } from "./chat.js";
 import { handleReactions } from "./reactions.js";
-import { getCurrentSongForSlug } from "./metadata.js";
+import { getCurrentSongForSlug, onNewSong } from "./metadata.js";
 import { prisma } from "../db/client.js";
 
 function getListenerCount(io: IOServer, stationSlug: string): number {
@@ -83,6 +83,13 @@ export function setupSocketHandlers(io: IOServer) {
         slug,
         count: getListenerCount(io, slug),
       });
+    });
+
+    // Client-detected song change (from HLS segment URL parsing)
+    socket.on("client_now_playing", async (data: { stationId: string; artist: string; title: string }) => {
+      const slug = (socket as any).stationSlug as string | undefined;
+      if (!slug || !data.stationId || !data.artist || !data.title) return;
+      await onNewSong(io, data.stationId, slug, data.artist, data.title);
     });
 
     handleChat(io, socket);
