@@ -5,6 +5,13 @@ import { maybeRegenerateArtwork, initArtworkGenerator } from '../services/artwor
 // Track last known song per station to skip duplicates
 const lastSongByStation = new Map<string, string>(); // stationId -> "Artist - Title"
 
+// Last full song object per slug — used to replay on join
+const currentSongBySlug = new Map<string, object>();
+
+export function getCurrentSongForSlug(slug: string): object | null {
+  return currentSongBySlug.get(slug) ?? null;
+}
+
 // Active poll intervals
 const pollIntervals = new Map<string, NodeJS.Timeout>();
 let discoveryInterval: NodeJS.Timeout | null = null;
@@ -57,7 +64,7 @@ export async function pollStation(
       },
     });
 
-    io.to(`station:${slug}`).emit("now_playing", {
+    const nowPlaying = {
       id: song.id,
       stationId: song.stationId,
       title: song.title,
@@ -65,7 +72,9 @@ export async function pollStation(
       albumCoverUrl: song.albumCoverUrl,
       playedAt: song.playedAt,
       duration: song.duration,
-    });
+    };
+    currentSongBySlug.set(slug, nowPlaying);
+    io.to(`station:${slug}`).emit("now_playing", nowPlaying);
 
     const recentSongs = await prisma.song.findMany({
       where: { stationId },
@@ -104,6 +113,10 @@ async function refreshPollers(io: IOServer): Promise<void> {
         clearInterval(interval);
         pollIntervals.delete(stationId);
         lastSongByStation.delete(stationId);
+        // find and clear slug entry
+        for (const [s, _] of currentSongBySlug) {
+          if (liveStations.every(st => st.slug !== s)) currentSongBySlug.delete(s);
+        }
       }
     }
 

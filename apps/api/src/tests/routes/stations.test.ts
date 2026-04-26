@@ -181,7 +181,7 @@ describe("GET /stations", () => {
   afterEach(() => vi.clearAllMocks());
 
   it("returns array of stations with dj name", async () => {
-    vi.mocked(prisma.station.findMany).mockResolvedValue([MOCK_STATION] as any);
+    vi.mocked(prisma.station.findMany).mockResolvedValue([{ ...MOCK_STATION, songs: [] }] as any);
     const res = await supertest(app.server).get("/stations");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);

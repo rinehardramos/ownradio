@@ -2,6 +2,7 @@ import type { Server as IOServer } from "socket.io";
 import { verifyToken } from "../lib/jwt.js";
 import { handleChat } from "./chat.js";
 import { handleReactions } from "./reactions.js";
+import { getCurrentSongForSlug } from "./metadata.js";
 
 function getListenerCount(io: IOServer, stationSlug: string): number {
   const room = io.sockets.adapter.rooms.get(`station:${stationSlug}`);
@@ -41,6 +42,10 @@ export function setupSocketHandlers(io: IOServer) {
         slug,
         count: getListenerCount(io, slug),
       });
+
+      // Replay current song to the joining socket so they don't wait for next poll
+      const currentSong = getCurrentSongForSlug(slug);
+      if (currentSong) socket.emit("now_playing", currentSong);
     });
 
     socket.on("leave_station", () => {
