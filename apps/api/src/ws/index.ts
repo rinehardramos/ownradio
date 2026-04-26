@@ -3,6 +3,7 @@ import { verifyToken } from "../lib/jwt.js";
 import { handleChat } from "./chat.js";
 import { handleReactions } from "./reactions.js";
 import { getCurrentSongForSlug } from "./metadata.js";
+import { prisma } from "../db/client.js";
 
 function getListenerCount(io: IOServer, stationSlug: string): number {
   const room = io.sockets.adapter.rooms.get(`station:${stationSlug}`);
@@ -43,9 +44,25 @@ export function setupSocketHandlers(io: IOServer) {
         count: getListenerCount(io, slug),
       });
 
-      // Replay current song to the joining socket so they don't wait for next poll
-      const currentSong = getCurrentSongForSlug(slug);
-      if (currentSong) socket.emit("now_playing", currentSong);
+      // Replay current song — use in-memory cache first, fall back to DB
+      const cached = getCurrentSongForSlug(slug);
+      if (cached) {
+        socket.emit("now_playing", cached);
+      } else {
+        prisma.station.findUnique({
+          where: { slug },
+          select: {
+            songs: {
+              orderBy: { playedAt: "desc" },
+              take: 1,
+              select: { id: true, stationId: true, title: true, artist: true, albumCoverUrl: true, playedAt: true, duration: true },
+            },
+          },
+        }).then((s) => {
+          const song = s?.songs[0];
+          if (song) socket.emit("now_playing", song);
+        }).catch(() => {/* ignore — client will wait for next poll */});
+      }
     });
 
     socket.on("leave_station", () => {
