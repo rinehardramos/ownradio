@@ -94,3 +94,38 @@ export function createPlayGenProgram(
 export function listTtsVoices(): Promise<TtsVoice[]> {
   return call('GET', '/dj/tts/voices');
 }
+
+// ── Public endpoints (no auth required) ──────────────────────────────────────
+
+const PUBLIC_BASE = process.env.PLAYGEN_PUBLIC_URL ?? process.env.PLAYGEN_BASE_URL ?? '';
+
+async function publicCall<T>(path: string): Promise<T> {
+  const res = await fetch(`${PUBLIC_BASE}${path}`);
+  if (!res.ok) {
+    throw new Error(`PlayGen public API error ${res.status}: ${await res.text()}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export interface PublicStation {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  streamUrl: string;
+  genre: string;
+  artworkUrl: string | null;
+  isLive: boolean;
+  status: string;
+  dj: { id: string; name: string; bio: string; avatarUrl: string | null } | null;
+  currentSong: unknown | null;
+  listenerCount: number;
+}
+
+export function getPublicStations(): Promise<PublicStation[]> {
+  return publicCall('/public/stations');
+}
+
+export function getPublicStation(slug: string): Promise<PublicStation & { songs: unknown[]; djs: unknown[] }> {
+  return publicCall(`/public/stations/${slug}`);
+}

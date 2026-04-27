@@ -1,6 +1,8 @@
 import type { FastifyPluginAsync } from "fastify";
 import { prisma } from "../db/client.js";
 import { generateDjAvatar } from "../services/avatarGenerator.js";
+import { getPublicStations, getPublicStation } from "../lib/playgen.js";
+import { getCurrentSongForSlug } from "../ws/metadata.js";
 
 const WEBHOOK_SECRET = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
 
@@ -28,7 +30,8 @@ interface CreateStationBody {
 }
 
 export const stationRoutes: FastifyPluginAsync = async (app) => {
-  // POST /stations — upsert by slug (requires X-PlayGen-Secret)
+  // POST /stations — upsert by slug (webhook from PlayGen, requires X-PlayGen-Secret)
+  // Kept for backward compat: creates local record for song history FK references
   app.post<{ Body: CreateStationBody }>("/stations", async (request, reply) => {
     if (!verifySecret(request)) {
       return reply.status(401).send({ error: "Unauthorized" });
@@ -43,7 +46,6 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
     const existing = await prisma.station.findUnique({ where: { slug }, include: { dj: true } });
 
     if (existing) {
-      // Upsert: update station fields; update or create DJ if provided
       const updated = await prisma.station.update({
         where: { slug },
         data: {
@@ -63,19 +65,18 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
         include: { dj: true },
       });
 
-      if (updated.dj && !updated.dj.avatarUrl) {
-        try {
-          const avatarUrl = await generateDjAvatar({
-            djId: updated.dj.id,
-            djName: updated.dj.name,
-            djBio: updated.dj.bio,
-            genre: updated.genre,
-          });
-          await prisma.dJ.update({ where: { id: updated.dj.id }, data: { avatarUrl } });
-          updated.dj.avatarUrl = avatarUrl;
-        } catch (err) {
-          app.log.error({ err }, 'Avatar generation failed for DJ %s', updated.dj.id);
-        }
+      // #33: Only generate avatar on creation (when avatarUrl is null), not on every upsert
+      if (updated.dj && !updated.dj.avatarUrl && dj && !dj.avatarUrl) {
+        generateDjAvatar({
+          djId: updated.dj.id,
+          djName: updated.dj.name,
+          djBio: updated.dj.bio,
+          genre: updated.genre,
+        }).then(avatarUrl => {
+          prisma.dJ.update({ where: { id: updated.dj!.id }, data: { avatarUrl } }).catch(() => {});
+        }).catch(err => {
+          app.log.error({ err }, 'Avatar generation failed for DJ %s', updated.dj!.id);
+        });
       }
 
       return reply.status(200).send(updated);
@@ -98,97 +99,129 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
       include: { dj: true },
     });
 
+    // #33: Generate avatar only on first creation when no avatar provided
     if (created.dj && !created.dj.avatarUrl) {
-      try {
-        const avatarUrl = await generateDjAvatar({
-          djId: created.dj.id,
-          djName: created.dj.name,
-          djBio: created.dj.bio,
-          genre: created.genre,
-        });
-        await prisma.dJ.update({ where: { id: created.dj.id }, data: { avatarUrl } });
-        created.dj.avatarUrl = avatarUrl;
-      } catch (err) {
-        app.log.error({ err }, 'Avatar generation failed for DJ %s', created.dj.id);
-      }
+      generateDjAvatar({
+        djId: created.dj.id,
+        djName: created.dj.name,
+        djBio: created.dj.bio,
+        genre: created.genre,
+      }).then(avatarUrl => {
+        prisma.dJ.update({ where: { id: created.dj!.id }, data: { avatarUrl } }).catch(() => {});
+      }).catch(err => {
+        app.log.error({ err }, 'Avatar generation failed for DJ %s', created.dj!.id);
+      });
     }
 
     return reply.status(201).send(created);
   });
 
-  // GET /stations
+  // GET /stations — #32: read from PlayGen public API (source of truth)
   app.get("/stations", async (request, reply) => {
-    const stations = await prisma.station.findMany({
-      include: {
-        dj: true,
-        songs: { orderBy: { playedAt: "desc" }, take: 1 },
-      },
-      orderBy: { name: "asc" },
-    });
-    return stations.map(({ songs, ...s }) => ({
-      ...s,
-      currentSong: songs[0] ?? null,
-      listenerCount: 0,
-    }));
+    try {
+      const playgenStations = await getPublicStations();
+
+      // Merge with local data: current song from in-memory cache, local DJ avatar
+      const localStations = await prisma.station.findMany({
+        where: { slug: { in: playgenStations.map(s => s.slug) } },
+        include: { dj: true, songs: { orderBy: { playedAt: "desc" }, take: 1 } },
+      });
+      const localBySlug = new Map(localStations.map(s => [s.slug, s]));
+
+      return playgenStations.map(pg => {
+        const local = localBySlug.get(pg.slug);
+        const currentSong = getCurrentSongForSlug(pg.slug) ?? (local?.songs?.[0] ?? null);
+        return {
+          ...pg,
+          // Prefer local fields that OwnRadio manages
+          artworkUrl: local?.artworkUrl ?? pg.artworkUrl,
+          streamUrl: local?.streamUrl || pg.streamUrl,
+          isLive: local?.isLive ?? pg.isLive,
+          dj: pg.dj ? {
+            ...pg.dj,
+            avatarUrl: local?.dj?.avatarUrl ?? pg.dj.avatarUrl,
+          } : local?.dj ?? null,
+          currentSong,
+          listenerCount: 0,
+        };
+      });
+    } catch (err) {
+      // Fallback to local DB if PlayGen is unreachable
+      request.log.warn({ err }, 'PlayGen public API unreachable, falling back to local DB');
+      const stations = await prisma.station.findMany({
+        include: { dj: true, songs: { orderBy: { playedAt: "desc" }, take: 1 } },
+        orderBy: { name: "asc" },
+      });
+      return stations.map(({ songs, ...s }) => ({
+        ...s,
+        currentSong: getCurrentSongForSlug(s.slug) ?? songs[0] ?? null,
+        listenerCount: 0,
+      }));
+    }
   });
 
-  // GET /stations/:slug
+  // GET /stations/:slug — #32: read from PlayGen
   app.get<{ Params: { slug: string } }>("/stations/:slug", async (request, reply) => {
     const { slug } = request.params;
-    const station = await prisma.station.findUnique({
-      where: { slug },
-      include: {
-        dj: true,
-        songs: {
-          orderBy: { playedAt: "desc" },
-          take: 20,
-        },
-      },
-    });
-    if (!station) {
-      return reply.status(404).send({ error: "Station not found" });
+    try {
+      const pg = await getPublicStation(slug);
+
+      // Merge local data
+      const local = await prisma.station.findUnique({
+        where: { slug },
+        include: { dj: true, songs: { orderBy: { playedAt: "desc" }, take: 20 } },
+      });
+
+      return {
+        ...pg,
+        artworkUrl: local?.artworkUrl ?? pg.artworkUrl,
+        streamUrl: local?.streamUrl || pg.streamUrl,
+        isLive: local?.isLive ?? pg.isLive,
+        dj: pg.dj ? {
+          ...pg.dj,
+          avatarUrl: local?.dj?.avatarUrl ?? pg.dj.avatarUrl,
+        } : local?.dj ?? null,
+        songs: local?.songs ?? [],
+      };
+    } catch {
+      // Fallback to local
+      const station = await prisma.station.findUnique({
+        where: { slug },
+        include: { dj: true, songs: { orderBy: { playedAt: "desc" }, take: 20 } },
+      });
+      if (!station) return reply.status(404).send({ error: "Station not found" });
+      return station;
     }
-    return station;
   });
 
-  // GET /stations/:slug/top-songs
+  // GET /stations/:slug/top-songs — local song history (OwnRadio-specific)
   app.get<{ Params: { slug: string } }>("/stations/:slug/top-songs", async (request, reply) => {
     const { slug } = request.params;
     const station = await prisma.station.findUnique({ where: { slug } });
-    if (!station) {
-      return reply.status(404).send({ error: "Station not found" });
-    }
-    const songs = await prisma.song.findMany({
+    if (!station) return reply.status(404).send({ error: "Station not found" });
+    return prisma.song.findMany({
       where: { stationId: station.id },
       orderBy: { playedAt: "desc" },
       take: 10,
     });
-    return songs;
   });
 
-  // GET /stations/:slug/programs
+  // GET /stations/:slug/programs — program history
   app.get<{ Params: { slug: string } }>('/stations/:slug/programs', async (request, reply) => {
     const { slug } = request.params;
     const station = await prisma.station.findUnique({ where: { slug } });
     if (!station) return reply.status(404).send({ error: 'Station not found' });
     const limit = Number(process.env.PROGRAM_HISTORY_LIMIT ?? 5);
-    const programs = await prisma.program.findMany({
+    return prisma.program.findMany({
       where: { stationId: station.id },
       orderBy: { recordedAt: 'desc' },
       take: limit,
     });
-    return programs;
   });
 
   // GET /djs/:djId/programs
-  app.get<{ Params: { djId: string } }>('/djs/:djId/programs', async (request, reply) => {
-    const { djId } = request.params;
-    const limit = Number(process.env.PROGRAM_HISTORY_LIMIT ?? 5);
-    const programs = await prisma.program.findMany({
-      where: { djId },
-      orderBy: { recordedAt: 'desc' },
-      take: limit,
-    });
-    return programs;
+  app.get<{ Params: { djId: string } }>('/djs/:djId/programs', async () => {
+    // Programs are now in PlayGen — this is a legacy endpoint
+    return [];
   });
 };

@@ -1,6 +1,6 @@
 import type { Server as IOServer } from "socket.io";
 import { prisma } from "../db/client.js";
-import { maybeRegenerateArtwork, initArtworkGenerator } from '../services/artworkGenerator.js';
+import { initArtworkGenerator } from '../services/artworkGenerator.js';
 
 // Track last known song per station to skip duplicates
 const lastSongByStation = new Map<string, string>(); // stationId -> "Artist - Title"
@@ -80,13 +80,7 @@ export async function onNewSong(
     currentSongBySlug.set(slug, nowPlaying);
     io.to(`station:${slug}`).emit("now_playing", nowPlaying);
 
-    const recentSongs = await prisma.song.findMany({
-      where: { stationId },
-      orderBy: { playedAt: 'desc' },
-      take: 5,
-      select: { id: true, stationId: true, artist: true, title: true, playedAt: true, albumCoverUrl: true, duration: true },
-    });
-    await maybeRegenerateArtwork(stationId, recentSongs);
+    // #33: Artwork generation removed from song change — now triggered per program delivery
   } catch {
     console.error(`Failed to save song for station ${slug}`);
   }

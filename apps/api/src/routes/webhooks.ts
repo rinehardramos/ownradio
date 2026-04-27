@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import type { Server as IOServer } from "socket.io";
 import type { StreamControlPayload, DjSwitchPayload } from "@ownradio/shared";
 import { prisma } from "../db/client.js";
+import { maybeRegenerateArtwork } from "../services/artworkGenerator.js";
 
 function verifySecret(req: { headers: Record<string, string | string[] | undefined> }): boolean {
   const secret = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
@@ -103,6 +104,17 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
             playbackUrl,
             coverArtUrl: coverArtUrl ?? null,
           },
+        });
+
+        // #33: Generate artwork once per program delivery (not per song change)
+        const recentSongs = await prisma.song.findMany({
+          where: { stationId: station.id },
+          orderBy: { playedAt: 'desc' },
+          take: 5,
+          select: { id: true, stationId: true, artist: true, title: true, playedAt: true, albumCoverUrl: true, duration: true },
+        });
+        maybeRegenerateArtwork(station.id, recentSongs).catch((err: unknown) => {
+          app.log.warn({ err }, '[webhook] artwork generation failed for station %s', slug);
         });
 
         return reply.status(201).send({ program });
