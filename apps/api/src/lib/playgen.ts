@@ -97,7 +97,7 @@ export function listTtsVoices(): Promise<TtsVoice[]> {
 
 // ── Public endpoints (no auth required) ──────────────────────────────────────
 
-const PUBLIC_BASE = process.env.PLAYGEN_PUBLIC_URL ?? process.env.PLAYGEN_BASE_URL ?? '';
+const PUBLIC_BASE = process.env.PLAYGEN_PUBLIC_URL ?? process.env.PLAYGEN_BASE_URL ?? 'https://api.playgen.site/api/v1';
 
 async function publicCall<T>(path: string): Promise<T> {
   const res = await fetch(`${PUBLIC_BASE}${path}`);
