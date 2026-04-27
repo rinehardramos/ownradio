@@ -28,6 +28,17 @@ vi.mock("../../services/avatarGenerator.js", () => ({
   generateDjAvatar: vi.fn().mockResolvedValue("https://assets.example.com/djs/dj-new.jpg"),
 }));
 
+// Force GET /stations to use the local-DB fallback path (no live PlayGen calls in tests)
+vi.mock("../../lib/playgen.js", () => ({
+  getPublicStations: vi.fn().mockRejectedValue(new Error("PlayGen unavailable in tests")),
+  getPublicStation: vi.fn().mockRejectedValue(new Error("PlayGen unavailable in tests")),
+  createPlayGenStation: vi.fn(),
+  createDjProfile: vi.fn(),
+  assignDjToStation: vi.fn(),
+  createPlayGenProgram: vi.fn(),
+  listTtsVoices: vi.fn(),
+}));
+
 import { prisma } from "../../db/client.js";
 import { generateDjAvatar } from "../../services/avatarGenerator.js";
 

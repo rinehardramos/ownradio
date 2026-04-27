@@ -11,7 +11,7 @@ import { CreateProgramForm } from '../../components/station-wizard/CreateProgram
 import { ReadinessChecklist } from '../../components/station-wizard/ReadinessChecklist';
 
 export default function MyStationPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading } = useAuth();
   const { station, readiness, loading, wizardStep, setWizardStep, refresh } = useMyStation();
   const [showWizard, setShowWizard] = useState(false);
 
@@ -19,15 +19,6 @@ export default function MyStationPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--bg-primary)]">
         <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--bg-primary)] px-6 text-center">
-        <h1 className="text-xl font-bold text-white mb-2">Sign in to continue</h1>
-        <p className="text-white/50 text-sm">You need an account to create a station.</p>
       </div>
     );
   }

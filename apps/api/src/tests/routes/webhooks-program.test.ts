@@ -6,6 +6,7 @@ vi.mock('../../db/client.js', () => ({
   prisma: {
     station: { findUnique: vi.fn() },
     program: { upsert: vi.fn() },
+    song: { findMany: vi.fn().mockResolvedValue([]) },
   },
 }));
 
