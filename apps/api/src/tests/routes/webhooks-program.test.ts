@@ -13,11 +13,12 @@ vi.mock('../../db/client.js', () => ({
 import { prisma } from '../../db/client.js';
 
 const MOCK_STATION = { id: 'st1', slug: 'rock-haven', dj: { id: 'dj1' } };
+const CLOUD_PLAYBACK_URL = 'https://cdn.playgen.site/programs/prog1.mp3';
 const MOCK_PROGRAM = {
   id: 'prog1', stationId: 'st1', djId: 'dj1',
   title: 'Late Night Vibes ep 1', description: null,
   recordedAt: new Date('2026-04-26T02:00:00Z'),
-  durationSecs: 3600, playbackUrl: 'programs/prog1.mp3',
+  durationSecs: 3600, playbackUrl: CLOUD_PLAYBACK_URL,
   coverArtUrl: null, createdAt: new Date(),
 };
 
@@ -39,11 +40,25 @@ describe('POST /webhooks/stations/:slug/program', () => {
         title: 'Late Night Vibes ep 1',
         recordedAt: '2026-04-26T02:00:00Z',
         durationSecs: 3600,
-        playbackUrl: 'programs/prog1.mp3',
+        playbackUrl: CLOUD_PLAYBACK_URL,
       });
 
     expect(res.status).toBe(201);
     expect(res.body.program.title).toBe('Late Night Vibes ep 1');
+  });
+
+  it('returns 422 when playbackUrl is a local/non-cloud URL', async () => {
+    vi.mocked(prisma.station.findUnique).mockResolvedValue(MOCK_STATION as any);
+    const res = await supertest(app.server)
+      .post('/webhooks/stations/rock-haven/program')
+      .set('x-playgen-secret', '')
+      .send({
+        title: 'Local Show',
+        recordedAt: '2026-04-26T02:00:00Z',
+        durationSecs: 3600,
+        playbackUrl: 'http://localhost:3000/programs/local.mp3',
+      });
+    expect(res.status).toBe(422);
   });
 
   it('returns 401 when a configured secret is sent incorrectly', async () => {

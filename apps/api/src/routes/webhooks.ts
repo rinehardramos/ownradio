@@ -21,6 +21,19 @@ interface ProgramWebhookBody {
   coverArtUrl?: string;
 }
 
+/** Reject local/non-cloud URLs so broken artifacts never reach the DB.
+ *  PlayGen cloud must send HTTPS CDN URLs, not localhost or private IPs. */
+function isCloudUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol !== 'https:') return false;
+    if (/^(localhost|127\.|0\.0\.0\.0|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(hostname)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Internal webhook routes called by PlayGen to control OwnRadio streams.
  * Requires X-PlayGen-Secret header matching PLAYGEN_WEBHOOK_SECRET env var.
@@ -83,6 +96,12 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
 
         if (!title || !recordedAt || !durationSecs || !playbackUrl) {
           return reply.status(400).send({ error: 'title, recordedAt, durationSecs, and playbackUrl are required' });
+        }
+        if (!isCloudUrl(playbackUrl)) {
+          return reply.status(422).send({ error: 'playbackUrl must be a public HTTPS cloud URL, not a local or private address' });
+        }
+        if (coverArtUrl && !isCloudUrl(coverArtUrl)) {
+          return reply.status(422).send({ error: 'coverArtUrl must be a public HTTPS cloud URL, not a local or private address' });
         }
 
         const station = await prisma.station.findUnique({

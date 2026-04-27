@@ -2,6 +2,18 @@
 import { Music, Play, Square, Clock } from 'lucide-react';
 import type { Program } from '@ownradio/shared';
 
+function isCloudUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol !== 'https:') return false;
+    if (/^(localhost|127\.|0\.0\.0\.0|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/.test(hostname)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 interface PastShowsListProps {
   programs: Program[];
   onPlay: (program: Program) => void;
@@ -32,6 +44,7 @@ export function PastShowsList({ programs, onPlay, activeProgram }: PastShowsList
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
       {programs.map((prog) => {
         const isActive = activeProgram?.id === prog.id;
+        const playable = isCloudUrl(prog.playbackUrl);
         return (
           <div
             key={prog.id}
@@ -39,7 +52,7 @@ export function PastShowsList({ programs, onPlay, activeProgram }: PastShowsList
           >
             {/* Cover art */}
             <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-elevated)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-              {prog.coverArtUrl
+              {prog.coverArtUrl && isCloudUrl(prog.coverArtUrl)
                 /* eslint-disable-next-line @next/next/no-img-element */
                 ? <img src={prog.coverArtUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <Music size={16} strokeWidth={1.75} color="rgba(255,255,255,0.3)" />
@@ -56,20 +69,31 @@ export function PastShowsList({ programs, onPlay, activeProgram }: PastShowsList
                 <span>{formatDuration(prog.durationSecs)}</span>
                 <span>·</span>
                 <span>{formatDate(prog.recordedAt)}</span>
+                {!playable && (
+                  <span style={{ marginLeft: '2px', padding: '1px 6px', borderRadius: '9999px', background: 'rgba(255,255,255,0.07)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+                    Processing
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Play/stop button */}
-            <button
-              onClick={() => onPlay(prog)}
-              aria-label={isActive ? 'Stop' : `Play ${prog.title}`}
-              style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, border: '1px solid rgba(255,45,120,0.4)', background: isActive ? 'rgba(255,45,120,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 150ms' }}
-            >
-              {isActive
-                ? <Square size={12} strokeWidth={2} color="#ff2d78" fill="#ff2d78" />
-                : <Play size={12} strokeWidth={2} color="rgba(255,255,255,0.6)" style={{ marginLeft: 1 }} />
-              }
-            </button>
+            {/* Play/stop button — disabled until cloud URL is available */}
+            {playable ? (
+              <button
+                onClick={() => onPlay(prog)}
+                aria-label={isActive ? 'Stop' : `Play ${prog.title}`}
+                style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, border: '1px solid rgba(255,45,120,0.4)', background: isActive ? 'rgba(255,45,120,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 150ms' }}
+              >
+                {isActive
+                  ? <Square size={12} strokeWidth={2} color="#ff2d78" fill="#ff2d78" />
+                  : <Play size={12} strokeWidth={2} color="rgba(255,255,255,0.6)" style={{ marginLeft: 1 }} />
+                }
+              </button>
+            ) : (
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Play size={12} strokeWidth={2} color="rgba(255,255,255,0.15)" style={{ marginLeft: 1 }} />
+              </div>
+            )}
           </div>
         );
       })}
