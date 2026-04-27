@@ -90,9 +90,10 @@ export function useStation(station: StationWithDJ): UseStationReturn {
     const resolveTimer = setTimeout(() => setSongResolved(true), 5000);
 
     function onNowPlaying(song: Song) {
-      // Guard: only filter by stationId when the backend includes it in the payload.
-      // If stationId is absent (backend omits it), let the event through.
-      if (song.stationId && song.stationId !== station.id) return;
+      // No stationId guard needed: only one useStation runs at a time and the
+      // socket is in the correct room — room routing is the source of truth.
+      // (station.id is the PlayGen UUID; song.stationId is the local DB cuid —
+      // they never match, so any ID-based guard would silently drop all events.)
       setCurrentSong(song);
       setSongResolved(true);
       setActiveReaction(null); // reset on song change

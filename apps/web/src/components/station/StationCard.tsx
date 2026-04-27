@@ -302,7 +302,7 @@ export function StationCard({
             onVolumeChange={onVolumeChange}
             onSongDetected={(artist, title) => {
               const socket = getSocket();
-              socket.emit('client_now_playing', { stationId: station.id, artist, title });
+              socket.emit('client_now_playing', { artist, title });
             }}
           />
         ) : (

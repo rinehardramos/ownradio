@@ -86,10 +86,13 @@ export function setupSocketHandlers(io: IOServer) {
     });
 
     // Client-detected song change (from HLS segment URL parsing)
-    socket.on("client_now_playing", async (data: { stationId: string; artist: string; title: string }) => {
+    socket.on("client_now_playing", async (data: { artist: string; title: string }) => {
       const slug = (socket as any).stationSlug as string | undefined;
-      if (!slug || !data.stationId || !data.artist || !data.title) return;
-      await onNewSong(io, data.stationId, slug, data.artist, data.title);
+      if (!slug || !data.artist || !data.title) return;
+      // Look up local station by slug — client sends PlayGen UUID which differs from local DB id
+      const station = await prisma.station.findUnique({ where: { slug }, select: { id: true } });
+      if (!station) return;
+      await onNewSong(io, station.id, slug, data.artist, data.title);
     });
 
     handleChat(io, socket);
