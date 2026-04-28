@@ -7,6 +7,7 @@ import type {
   Song,
   DjSwitchPayload,
   Program,
+  DjFloatingEvent,
 } from "@ownradio/shared";
 import { AudioControls, type AudioControlsHandle } from "./AudioControls";
 import { getSocket } from "@/lib/socket";
@@ -28,6 +29,7 @@ interface StationCardProps {
   streamUrl: string | null;
   activeDj: DjSwitchPayload | null;
   listenerCount: number;
+  djEvents?: DjFloatingEvent[] | null;
   onReact: (type: ReactionType) => void;
   onPlayStateChange: (playing: boolean) => void;
   onVolumeChange: (volume: number) => void;
@@ -46,6 +48,7 @@ export function StationCard({
   streamUrl,
   activeDj,
   listenerCount,
+  djEvents,
   onReact,
   onPlayStateChange,
   onVolumeChange,
@@ -300,6 +303,7 @@ export function StationCard({
             autoPlay={autoPlay}
             onPlayStateChange={onPlayStateChange}
             onVolumeChange={onVolumeChange}
+            djEvents={djEvents ?? undefined}
             onSongDetected={(artist, title) => {
               const socket = getSocket();
               socket.emit('client_now_playing', { artist, title });

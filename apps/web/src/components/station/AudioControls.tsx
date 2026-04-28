@@ -2,6 +2,9 @@
 import { forwardRef, useImperativeHandle, useState, useCallback, useRef, useEffect } from 'react';
 import Hls from 'hls.js';
 import { Volume2, VolumeX, WifiOff } from 'lucide-react';
+import type { DjFloatingEvent } from '@ownradio/shared';
+
+export type { DjFloatingEvent };
 
 export interface AudioControlsHandle {
   isPlaying: boolean;
@@ -17,6 +20,8 @@ interface AudioControlsProps {
   onPlayStateChange?: (playing: boolean) => void;
   onVolumeChange?: (volume: number) => void;
   onSongDetected?: (artist: string, title: string) => void;
+  /** Floating DJ events — clips that play over music with volume ducking. */
+  djEvents?: DjFloatingEvent[];
 }
 
 /** Convert a URL slug like "the-chainsmokers-featuring-halsey" to "The Chainsmokers Featuring Halsey" */
@@ -76,8 +81,28 @@ function formatTime(seconds: number): string {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+// ── DJ floating event engine ─────────────────────────────────────────────────
+
+const DUCK_VOLUME = 0.15;    // Music volume while DJ is speaking
+const DUCK_RAMP_MS = 300;    // Fade-to-duck duration (ms)
+const RESTORE_RAMP_MS = 600; // Fade-back-to-full duration (ms)
+const LOOKAHEAD_SEC = 0.5;   // Fire events up to 0.5s early to account for scheduling jitter
+
+function rampVolume(audio: HTMLAudioElement, from: number, to: number, durationMs: number) {
+  const steps = 20;
+  const stepMs = durationMs / steps;
+  const delta = (to - from) / steps;
+  let step = 0;
+  const id = setInterval(() => {
+    step++;
+    audio.volume = Math.max(0, Math.min(1, from + delta * step));
+    if (step >= steps) clearInterval(id);
+  }, stepMs);
+  return id;
+}
+
 export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>(
-  function AudioControls({ streamUrl, stationSlug, autoPlay = false, onPlayStateChange, onVolumeChange, onSongDetected }, ref) {
+  function AudioControls({ streamUrl, stationSlug, autoPlay = false, onPlayStateChange, onVolumeChange, onSongDetected, djEvents }, ref) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolumeState] = useState(0.8);
     const [streamError, setStreamError] = useState<string | null>(null);
@@ -90,17 +115,74 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
     const autoPlayRef = useRef(autoPlay);
     const lastDetectedSongRef = useRef<string>('');
     const onSongDetectedRef = useRef(onSongDetected);
+    // DJ floating events engine
+    const djEventsRef = useRef<DjFloatingEvent[]>([]);
+    const firedEventIdsRef = useRef<Set<string>>(new Set());
+    const isDuckingRef = useRef(false);
 
     // Slug for localStorage key (fall back to URL-based key)
     const slug = stationSlug || streamUrl.replace(/[^a-z0-9]/gi, '-').slice(0, 40);
 
     // Keep refs in sync with props without re-running the HLS setup effect
+    useEffect(() => { autoPlayRef.current = autoPlay; }, [autoPlay]);
+    useEffect(() => { onSongDetectedRef.current = onSongDetected; }, [onSongDetected]);
+
+    // Sync djEvents prop into ref; reset fired set when events list changes
     useEffect(() => {
-      autoPlayRef.current = autoPlay;
-    }, [autoPlay]);
+      djEventsRef.current = djEvents ?? [];
+      firedEventIdsRef.current = new Set();
+    }, [djEvents]);
+
+    // DJ floating event dispatcher — runs on every timeupdate
     useEffect(() => {
-      onSongDetectedRef.current = onSongDetected;
-    }, [onSongDetected]);
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const handleTimeUpdate = () => {
+        const t = audio.currentTime;
+        if (audio.paused || isDuckingRef.current) return;
+
+        for (const evt of djEventsRef.current) {
+          if (firedEventIdsRef.current.has(evt.segment_id)) continue;
+          if (t < evt.program_offset_sec - LOOKAHEAD_SEC) continue;
+          if (t > evt.program_offset_sec + 5) continue; // missed window — skip
+
+          firedEventIdsRef.current.add(evt.segment_id);
+
+          if (!evt.duck_music) {
+            // Just play clip without ducking
+            const clip = new Audio(evt.audio_url);
+            clip.volume = audio.volume;
+            clip.play().catch(() => {});
+            return;
+          }
+
+          // Duck music, play clip, restore
+          isDuckingRef.current = true;
+          const musicVol = audio.volume;
+          rampVolume(audio, musicVol, DUCK_VOLUME, DUCK_RAMP_MS);
+
+          const clip = new Audio(evt.audio_url);
+          clip.volume = Math.min(1, musicVol * 1.2); // slightly louder than music baseline
+          clip.play().catch(() => {
+            // Playback blocked — restore music immediately
+            isDuckingRef.current = false;
+            rampVolume(audio, DUCK_VOLUME, musicVol, RESTORE_RAMP_MS);
+          });
+          clip.addEventListener('ended', () => {
+            isDuckingRef.current = false;
+            rampVolume(audio, DUCK_VOLUME, musicVol, RESTORE_RAMP_MS);
+          }, { once: true });
+          clip.addEventListener('error', () => {
+            isDuckingRef.current = false;
+            rampVolume(audio, DUCK_VOLUME, musicVol, RESTORE_RAMP_MS);
+          }, { once: true });
+        }
+      };
+
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      return () => audio.removeEventListener('timeupdate', handleTimeUpdate);
+    }, [streamUrl]); // re-bind when stream changes; djEvents synced via ref
 
     // HLS.js setup
     useEffect(() => {
@@ -129,6 +211,8 @@ export const AudioControls = forwardRef<AudioControlsHandle, AudioControlsProps>
 
       setStreamError(null);
       lastDetectedSongRef.current = '';
+      firedEventIdsRef.current = new Set();
+      isDuckingRef.current = false;
 
       const isHls = streamUrl.endsWith('.m3u8');
 

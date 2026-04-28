@@ -59,10 +59,22 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+/** A floating DJ clip that plays over music at a specific program-timeline offset. */
+export interface DjFloatingEvent {
+  segment_id: string;
+  segment_type: string;
+  audio_url: string;
+  duration_sec: number;
+  program_offset_sec: number;
+  duck_music: boolean;
+}
+
 export interface StationWithDJ extends Station {
   dj: DJ | null;
   listenerCount: number;
   currentSong: Song | null;
+  /** Floating DJ events from the current program manifest — populated when a program is active. */
+  djEvents?: DjFloatingEvent[] | null;
 }
 
 export interface Program {
