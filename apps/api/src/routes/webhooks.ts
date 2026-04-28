@@ -2,8 +2,6 @@ import type { FastifyPluginAsync } from "fastify";
 import type { Server as IOServer } from "socket.io";
 import type { StreamControlPayload, DjSwitchPayload } from "@ownradio/shared";
 import { prisma } from "../db/client.js";
-import { maybeRegenerateArtwork, forceRegenerateArtwork } from "../services/artworkGenerator.js";
-import { generateDjAvatar } from "../services/avatarGenerator.js";
 
 function verifySecret(req: { headers: Record<string, string | string[] | undefined> }): boolean {
   const secret = process.env.PLAYGEN_WEBHOOK_SECRET ?? "";
@@ -126,70 +124,8 @@ export function buildWebhookRoutes(getIo: () => IOServer): FastifyPluginAsync {
           },
         });
 
-        // #33: Generate artwork once per program delivery (not per song change)
-        const recentSongs = await prisma.song.findMany({
-          where: { stationId: station.id },
-          orderBy: { playedAt: 'desc' },
-          take: 5,
-          select: { id: true, stationId: true, artist: true, title: true, playedAt: true, albumCoverUrl: true, duration: true },
-        });
-        maybeRegenerateArtwork(station.id, recentSongs).catch((err: unknown) => {
-          app.log.warn({ err }, '[webhook] artwork generation failed for station %s', slug);
-        });
-
         return reply.status(201).send({ program });
       }
     );
-
-    // POST /webhooks/admin/regenerate-art
-    // Triggers DALL-E regeneration for all DJ avatars and station artwork.
-    // Protected by the same x-playgen-secret header. Runs async — returns immediately.
-    app.post('/webhooks/admin/regenerate-art', async (request, reply) => {
-      if (!verifySecret(request)) return reply.status(401).send({ error: 'Unauthorized' });
-
-      const scope = (request.query as { scope?: string }).scope ?? 'all';
-      const runDjs = scope === 'all' || scope === 'djs';
-      const runStations = scope === 'all' || scope === 'stations';
-
-      // Fire-and-forget — generation takes minutes; client gets immediate 202
-      (async () => {
-        if (runDjs) {
-          const djs = await prisma.dJ.findMany({
-            select: { id: true, name: true, bio: true, station: { select: { genre: true } } },
-          });
-          for (const dj of djs) {
-            try {
-              const avatarUrl = await generateDjAvatar({
-                djId: dj.id,
-                djName: dj.name,
-                djBio: dj.bio ?? '',
-                genre: dj.station?.genre ?? 'pop',
-              });
-              await prisma.dJ.update({ where: { id: dj.id }, data: { avatarUrl } });
-              app.log.info({ djId: dj.id, avatarUrl }, '[admin] DJ avatar regenerated');
-            } catch (err) {
-              app.log.error({ err, djId: dj.id }, '[admin] DJ avatar generation failed');
-            }
-          }
-        }
-
-        if (runStations) {
-          const stations = await prisma.station.findMany({ select: { id: true, slug: true } });
-          for (const station of stations) {
-            try {
-              await forceRegenerateArtwork(station.id);
-              app.log.info({ slug: station.slug }, '[admin] Station artwork regenerated');
-            } catch (err) {
-              app.log.error({ err, slug: station.slug }, '[admin] Station artwork failed');
-            }
-          }
-        }
-      })().catch((err) => app.log.error({ err }, '[admin] regenerate-art fatal error'));
-
-      return reply.status(202).send({
-        ok: true,
-        message: `Regenerating ${scope} artwork in the background — check server logs for progress`,
-      });
-    });
   };
 }

@@ -1,6 +1,5 @@
 import type { Server as IOServer } from "socket.io";
 import { prisma } from "../db/client.js";
-import { initArtworkGenerator } from '../services/artworkGenerator.js';
 
 // Track last known song per station to skip duplicates
 const lastSongByStation = new Map<string, string>(); // stationId -> "Artist - Title"
@@ -98,7 +97,6 @@ export async function pollStation(
 }
 
 export async function startMetadataPollers(io: IOServer): Promise<void> {
-  initArtworkGenerator(io);
   // Initial load of live stations
   await refreshPollers(io);
 

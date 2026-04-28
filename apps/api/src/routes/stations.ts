@@ -1,6 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
 import { prisma } from "../db/client.js";
-import { generateDjAvatar } from "../services/avatarGenerator.js";
 import { getPublicStations, getPublicStation } from "../lib/playgen.js";
 import { getCurrentSongForSlug } from "../ws/metadata.js";
 
@@ -65,20 +64,6 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
         include: { dj: true },
       });
 
-      // #33: Only generate avatar on creation (when avatarUrl is null), not on every upsert
-      if (updated.dj && !updated.dj.avatarUrl && dj && !dj.avatarUrl) {
-        generateDjAvatar({
-          djId: updated.dj.id,
-          djName: updated.dj.name,
-          djBio: updated.dj.bio,
-          genre: updated.genre,
-        }).then(avatarUrl => {
-          prisma.dJ.update({ where: { id: updated.dj!.id }, data: { avatarUrl } }).catch(() => {});
-        }).catch(err => {
-          app.log.error({ err }, 'Avatar generation failed for DJ %s', updated.dj!.id);
-        });
-      }
-
       return reply.status(200).send(updated);
     }
 
@@ -98,20 +83,6 @@ export const stationRoutes: FastifyPluginAsync = async (app) => {
       },
       include: { dj: true },
     });
-
-    // #33: Generate avatar only on first creation when no avatar provided
-    if (created.dj && !created.dj.avatarUrl) {
-      generateDjAvatar({
-        djId: created.dj.id,
-        djName: created.dj.name,
-        djBio: created.dj.bio,
-        genre: created.genre,
-      }).then(avatarUrl => {
-        prisma.dJ.update({ where: { id: created.dj!.id }, data: { avatarUrl } }).catch(() => {});
-      }).catch(err => {
-        app.log.error({ err }, 'Avatar generation failed for DJ %s', created.dj!.id);
-      });
-    }
 
     return reply.status(201).send(created);
   });

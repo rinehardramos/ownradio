@@ -22,9 +22,6 @@ vi.mock('../../lib/playgen.js', () => ({
   listTtsVoices: vi.fn(),
 }));
 
-vi.mock('../../services/avatarGenerator.js', () => ({
-  generateDjAvatar: vi.fn().mockResolvedValue('mock-avatar'),
-}));
 
 vi.mock('../../lib/jwt.js', () => ({
   signToken: vi.fn(),
