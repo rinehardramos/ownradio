@@ -86,6 +86,28 @@ export async function maybeRegenerateArtwork(
   generationState.set(stationId, { lastSongFingerprint: fingerprint, lastGeneratedAt: now });
 }
 
+/** Force artwork regeneration regardless of debounce state — for scripts/admin use. */
+export async function forceRegenerateArtwork(stationId: string): Promise<void> {
+  const station = await prisma.station.findUnique({
+    where: { id: stationId },
+    select: { id: true, slug: true, genre: true, artworkUrl: true },
+  });
+  if (!station) return;
+
+  const recentSongs = await prisma.song.findMany({
+    where: { stationId },
+    orderBy: { playedAt: 'desc' },
+    take: 5,
+    select: { artist: true, title: true },
+  });
+
+  await generateArtwork(station, recentSongs);
+  generationState.set(stationId, {
+    lastSongFingerprint: computeFingerprint(recentSongs),
+    lastGeneratedAt: Date.now(),
+  });
+}
+
 async function generateArtwork(
   station: { id: string; slug: string; genre: string },
   songs: SongRef[]
